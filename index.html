@@ -3,407 +3,647 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>一口日曆 Bite a Calendar</title>
+    <title>一口日曆 | Bite a Calendar</title>
     <meta property="og:title" content="一口日曆 Bite a Calendar">
-    <meta property="og:description" content="一口美食，一口飲料，一句溫暖的專屬充電站！">
-    <meta property="og:image" content="./social.png">
-    <link rel="icon" href="./logo.png">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <meta property="og:description" content="一口美食，一口飲料，一句溫暖。你的專屬嘴饞充電站！">
+    <meta property="og:image" content="social.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="icon" href="logo.png">
     
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Noto+Sans+TC:wght@700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="quotes.js"></script>
 
     <style>
+        /* --- 1. 字型設定 (源泉圓體 TW) --- */
+        @font-face { font-family: 'GenJyuu'; src: url('500.otf') format('opentype'); font-weight: 500; }
+        @font-face { font-family: 'GenJyuu'; src: url('700.otf') format('opentype'); font-weight: 700; }
+        @font-face { font-family: 'GenJyuu'; src: url('900.otf') format('opentype'); font-weight: 900; }
+
+        /* --- 2. 顏色與黏土風變數 --- */
+        :root {
+            --bg-color: #F8F6F0;      
+            --primary: #B8A690;       
+            --secondary: #E6DFD3;     
+            --text-dark: #4A4035;     
+            --text-light: #857A6F;    
+            --danger: #FF6B6B;
+            
+            --clay-shadow: 6px 6px 14px #E0D7C9, -6px -6px 14px #FFFFFF;
+            --clay-inset: inset 3px 3px 6px rgba(255, 255, 255, 0.9), inset -3px -3px 6px rgba(74, 64, 53, 0.05);
+            --sticker-shadow: 0 8px 16px rgba(74, 64, 53, 0.08);
+        }
+
+        * { box-sizing: border-box; font-family: 'GenJyuu', sans-serif; }
+
         body {
-            font-family: 'Nunito', 'Noto Sans TC', sans-serif;
-            background: linear-gradient(135deg, #F8F6F0 0%, #E6DFD3 100%);
-            color: #4A4035;
-            -webkit-tap-highlight-color: transparent;
+            margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-dark);
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+            overflow-x: hidden;
         }
+
+        #app-container {
+            width: 100%; max-width: 500px; padding: 25px 20px; flex: 1; 
+            display: flex; flex-direction: column; position: relative;
+        }
+
+        /* --- 3. 標題區 (主標對齊與 icon 嵌入) --- */
+        .header { 
+            display: flex; align-items: center; justify-content: center; 
+            margin-bottom: 25px; position: relative;
+        }
+        .header-title-box {
+            display: flex; flex-direction: column; justify-content: center; width: 170px;
+        }
+        .header h1 { 
+            margin: 0 0 5px 0; font-size: 32px; font-weight: 900; color: var(--text-dark); 
+            text-align-last: justify; letter-spacing: 2px;
+        }
+        .header h2 { 
+            margin: 0; font-size: 14px; font-weight: 900; color: var(--primary); 
+            text-align-last: justify; letter-spacing: 1px;
+        }
+        .header-icon-left { 
+            width: 70px; height: 70px; object-fit: contain; margin-right: 15px; 
+            filter: drop-shadow(2px 4px 6px rgba(74, 64, 53, 0.15)); 
+        }
+        .header-icon-right { 
+            width: 55px; position: absolute; top: -10px; right: 0; 
+            animation: float 3s ease-in-out infinite; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.1));
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0) rotate(5deg); } 50% { transform: translateY(-8px) rotate(-5deg); } }
+
+        /* --- 4. 黏土風卡片與按鈕 --- */
+        .clay-card {
+            background: var(--bg-color); border-radius: 28px; padding: 25px 20px;
+            box-shadow: var(--clay-shadow); position: relative; margin-bottom: 25px;
+        }
+        .clay-card::before {
+            content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
+            border-radius: 28px; box-shadow: var(--clay-inset); pointer-events: none;
+        }
+
+        .btn {
+            background: var(--primary); color: white; border: none; padding: 16px 24px;
+            border-radius: 100px; font-weight: 900; font-size: 18px; cursor: pointer;
+            box-shadow: 4px 4px 10px #D6CABA, -4px -4px 10px #DCD1C2;
+            transition: all 0.15s ease; width: 100%; margin-bottom: 15px; letter-spacing: 1px;
+        }
+        .btn:active { transform: scale(0.97); box-shadow: inset 3px 3px 8px rgba(0,0,0,0.1); }
+        .btn.secondary { background: var(--bg-color); color: var(--text-dark); box-shadow: var(--clay-shadow); border: 2px solid var(--secondary);}
+        .btn.danger { background: var(--danger); box-shadow: 4px 4px 10px #FFD6D6, -4px -4px 10px #FFFFFF; color: white;}
+
+        /* --- 5. 行事曆網格 (修復跑版問題) --- */
+        .calendar-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-weight: 900; font-size: 20px; color: var(--text-dark); }
+        .nav-btn { cursor: pointer; padding: 5px 15px; color: var(--primary); font-size: 24px; user-select: none;}
         
-        .app-container {
-            max-width: 480px;
-            margin: 0 auto;
-            min-height: 100vh;
-            background-color: rgba(255, 255, 255, 0.4);
-            box-shadow: 0 0 20px rgba(0,0,0,0.05);
-            position: relative;
-        }
-
-        /* 主標題中英文對齊魔法 */
-        .title-zh { text-align-last: justify; font-weight: 900; letter-spacing: 2px; }
-        .title-en { font-weight: 900; letter-spacing: 0.5px; }
-
-        /* 月曆網格穩定設計，解決排版跑掉的問題 */
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 8px;
-        }
-        .calendar-cell {
-            aspect-ratio: 1 / 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            background: #fff;
-            box-shadow: 2px 2px 8px rgba(0,0,0,0.05);
-            font-weight: 700;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-        .calendar-cell:active { transform: scale(0.95); }
-        .calendar-cell.empty { background: transparent; box-shadow: none; cursor: default; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; text-align: center; }
+        .weekday { font-weight: 700; color: var(--primary); font-size: 14px; margin-bottom: 8px; }
         
-        /* 紀錄縮圖：使用 object-fit 確保不變形、不撐破網格 */
-        .record-thumb {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: cover;
-            opacity: 0.6;
-            z-index: 0;
+        /* 修復：將 cell 設定為 relative，避免圖片撐破格子 */
+        .day-cell {
+            aspect-ratio: 1; width: 100%; border-radius: 14px; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; font-weight: 700; font-size: 16px; 
+            cursor: pointer; position: relative; color: var(--text-light);
+            box-shadow: inset 3px 3px 8px #E0D7C9, inset -3px -3px 8px #FFFFFF;
+            transition: transform 0.1s; overflow: hidden;
         }
-        .cell-date { position: relative; z-index: 1; text-shadow: 0 0 4px white; }
+        .day-cell:active { transform: scale(0.9); }
+        .day-cell.has-record { box-shadow: 3px 3px 8px #E0D7C9, -3px -3px 8px #FFFFFF; background: white; padding: 0;}
+        
+        /* 修復：將圖片設為絕對定位並填滿格子 */
+        .day-cell .thumbnail { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            object-fit: cover; border-radius: 14px; border: 3px solid white; 
+            box-sizing: border-box; z-index: 1;
+        }
+        .day-cell.has-record span { display: none; }
 
-        /* 精美對話框設計 */
-        .speech-bubble {
-            position: relative;
-            background: #fff;
-            border-radius: 20px;
-            padding: 16px 24px;
-            box-shadow: 0 10px 25px rgba(133, 122, 111, 0.15);
-            line-height: 1.6;
-            text-align: center;
-            border: 2px solid #F0EBE1;
-        }
-        .speech-bubble::after {
-            content: ''; position: absolute;
-            bottom: -10px; left: 50%; transform: translateX(-50%);
-            border-width: 10px 10px 0; border-style: solid;
-            border-color: #fff transparent transparent transparent;
-            display: block; width: 0;
-        }
+        .stats-area { display: flex; align-items: center; justify-content: center; margin-top: 20px; font-weight: 900; color: var(--text-dark); font-size: 20px; }
+        .stats-area img { width: 45px; margin-right: 10px; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.1)); }
 
-        /* 隱藏的截圖區域，用來生成完美尺寸的 day.jpg */
-        #capture-area {
-            position: fixed; top: -9999px; left: 0;
-            width: 800px; height: 1200px; /* 高畫質直式比例 */
-            background: linear-gradient(135deg, #F8F6F0 0%, #E6DFD3 100%);
-            padding: 60px; box-sizing: border-box;
+        /* --- 6. 視圖切換 --- */
+        .view { display: none; }
+        .view.active { display: block; animation: fadeIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- 7. 單日紀錄與貼紙特效 --- */
+        .quote-box {
+            background: white; padding: 25px 20px; border-radius: 20px; margin-bottom: 25px; 
+            font-weight: 900; text-align: center; color: var(--text-dark); font-size: 16px;
+            box-shadow: var(--clay-shadow); position: relative; line-height: 1.6;
+        }
+        .quote-box img { width: 50px; position: absolute; bottom: -20px; right: -10px; transform: rotate(15deg); filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15)); }
+
+        .upload-area { 
+            border: 3px dashed var(--secondary); border-radius: 24px; padding: 30px 20px; 
+            text-align: center; cursor: pointer; margin-bottom: 20px; background: white;
+            color: var(--primary); font-weight: 700; transition: background 0.2s;
             display: flex; flex-direction: column; align-items: center;
         }
+        .upload-area:active { background: #F5EFEB; }
+        .upload-area input[type="file"] { display: none; }
         
-        .modal { display: none; position: fixed; inset: 0; background: rgba(74, 64, 53, 0.8); z-index: 50; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(5px); }
-        .modal.active { display: flex; }
+        .input-group label { display: flex; align-items: center; gap: 8px; font-weight: 900; margin-bottom: 10px; color: var(--text-dark); }
+        .input-group input[type="number"] { 
+            width: 100%; padding: 16px; border-radius: 16px; border: none; 
+            box-shadow: inset 4px 4px 8px #E0D7C9, inset -4px -4px 8px #FFFFFF; 
+            font-size: 18px; background: var(--bg-color); margin-bottom: 25px; color: var(--text-dark); font-weight: 700; outline: none;
+        }
+
+        .sticker-img { 
+            width: 90%; aspect-ratio: 1; margin: 0 auto 20px auto; display: block;
+            border: 12px solid white; border-bottom-width: 35px; border-radius: 8px; 
+            box-shadow: var(--sticker-shadow); object-fit: cover; /* 修復被壓扁 */
+        }
+        .record-cost { text-align: center; font-weight: 900; font-size: 20px; color: var(--text-dark); margin-top: -45px; margin-bottom: 30px; position: relative; z-index: 10; font-family: 'GenJyuu', sans-serif;}
+
+        /* --- 8. 底部 --- */
+        .footer { text-align: center; font-size: 13px; color: var(--text-light); padding: 20px 0; margin-top: auto; font-weight: 700; letter-spacing: 1px;}
+
+        /* --- 9. 彈出視窗 (Modal) 樣式 --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(74, 64, 53, 0.5); backdrop-filter: blur(3px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.show { opacity: 1; pointer-events: auto; }
+        
+        .modal-box {
+            width: 90%; max-width: 400px; max-height: 85vh; overflow-y: auto;
+            margin: 0; animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .warning-list { color: var(--text-light); padding-left: 20px; font-size: 15px; line-height: 1.6; font-weight: 500;}
+        .warning-list li { margin-bottom: 12px; }
+        .warning-list b { color: var(--text-dark); font-weight: 900;}
+
+        .checkbox-label {
+            display: flex; align-items: center; justify-content: center; font-size: 15px; 
+            color: var(--text-light); margin: 20px 0; cursor: pointer; font-weight: 700;
+        }
+        .checkbox-label input { width: 18px; height: 18px; margin-right: 8px; accent-color: var(--primary); }
+
+        /* --- 10. 隱藏的截圖專用區 --- */
+        #export-container { position: absolute; top: -9999px; left: -9999px; width: 1080px; background: var(--bg-color); padding: 0; }
     </style>
 </head>
 <body>
 
-<div class="app-container p-6 pb-24">
-    <header class="flex items-center justify-between mb-8 relative">
-        <div class="flex items-center gap-4 w-full">
-            <img src="./icon.png" alt="Logo" class="w-16 h-16 object-contain filter drop-shadow-md">
+<div id="app-container">
+    <div id="home-view" class="view active">
+        <div class="header">
+            <img src="icon.png" alt="icon" class="header-icon-left">
+            <div class="header-title-box">
+                <h1>一口日曆</h1>
+                <h2>Bite a Calendar</h2>
+            </div>
+            <img src="clay_header_icon.png" alt="deco" class="header-icon-right">
+        </div>
+
+        <div class="clay-card">
+            <div class="calendar-controls">
+                <span class="nav-btn" onclick="changeMonth(-1)">‹</span>
+                <span id="month-year-display">2026 年 3 月</span>
+                <span class="nav-btn" onclick="changeMonth(1)">›</span>
+            </div>
+            <div class="calendar-grid" id="calendar-grid"></div>
             
-            <div class="flex-1 flex flex-col justify-center">
-                <div class="title-zh text-2xl text-[#4A4035] leading-none mb-1">一口日曆</div>
-                <div class="title-en text-sm text-[#857A6F] leading-none flex justify-between">
-                    <span>B</span><span>I</span><span>T</span><span>E</span><span> </span><span>A</span><span> </span><span>C</span><span>A</span><span>L</span><span>E</span><span>N</span><span>D</span><span>A</span><span>R</span>
-                </div>
+            <div class="stats-area">
+                <img src="clay_coin.png" alt="coin">
+                本月嘴饞開銷：$ <span id="monthly-total">0</span>
             </div>
         </div>
-        <img src="./clay_header_icon.png" alt="Deco" class="w-12 h-12 absolute -top-2 -right-2 transform rotate-12 drop-shadow-sm">
-    </header>
 
-    <section class="bg-white rounded-2xl p-5 mb-8 flex items-center justify-between shadow-sm relative overflow-hidden">
-        <div>
-            <div class="text-[#857A6F] text-sm font-bold mb-1">本月嘴饞投資</div>
-            <div class="text-3xl font-black text-[#4A4035]">$ <span id="total-expense">0</span></div>
-        </div>
-        <img src="./clay_coin.png" alt="Coin" class="w-16 h-16 drop-shadow-md transform hover:scale-110 transition">
-    </section>
-
-    <section>
-        <div class="flex justify-between items-center mb-4 px-2">
-            <button onclick="changeMonth(-1)" class="text-[#857A6F] font-bold text-xl px-2">&lt;</button>
-            <h2 id="month-display" class="text-xl font-black text-[#4A4035]">2026 年 3 月</h2>
-            <button onclick="changeMonth(1)" class="text-[#857A6F] font-bold text-xl px-2">&gt;</button>
-        </div>
-        <div class="calendar-grid mb-2 text-center text-[#857A6F] font-bold text-sm">
-            <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
-        </div>
-        <div id="calendar-body" class="calendar-grid">
-            </div>
-    </section>
-
-    <button onclick="openAddModal()" class="fixed bottom-8 right-1/2 transform translate-x-1/2 bg-[#4A4035] text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg text-2xl hover:bg-[#605548] transition z-40">
-        +
-    </button>
-</div>
-
-<div id="add-modal" class="modal">
-    <div class="bg-white w-full max-w-sm rounded-3xl p-6 relative">
-        <button onclick="closeModal('add-modal')" class="absolute top-4 right-5 text-[#857A6F] font-bold text-xl">&times;</button>
-        <h3 class="text-xl font-black text-[#4A4035] mb-6 text-center" id="modal-date-title">新增紀錄</h3>
+        <button class="btn" onclick="exportMonthly()">打包本月月曆 (分享圖)</button>
+        <button class="btn secondary" style="font-size: 16px; padding: 12px 24px;" onclick="openBackupModal()">📦 備份 / 還原紀錄</button>
         
-        <div class="space-y-5">
-            <label class="block cursor-pointer">
-                <div class="flex items-center gap-3 mb-2">
-                    <img src="./clay_camera.png" class="w-8 h-8">
-                    <span class="font-bold text-[#857A6F]">今天吃了什麼？</span>
-                </div>
-                <div id="image-preview-container" class="w-full aspect-[4/3] bg-[#F8F6F0] rounded-xl border-2 border-dashed border-[#DCD5C6] flex items-center justify-center overflow-hidden">
-                    <span class="text-[#B8A690] font-bold">+ 點擊上傳照片</span>
-                    <img id="image-preview" class="hidden w-full h-full object-cover">
-                </div>
-                <input type="file" id="image-input" accept="image/*" class="hidden" onchange="previewImage(event)">
-            </label>
+        <div class="footer">© 2026 an App a Day Project.</div>
+    </div>
 
-            <div>
-                <div class="flex items-center gap-3 mb-2">
-                    <img src="./clay_receipt.png" class="w-8 h-8">
-                    <span class="font-bold text-[#857A6F]">花了多少錢？</span>
-                </div>
-                <input type="number" id="expense-input" placeholder="輸入金額" class="w-full bg-[#F8F6F0] rounded-xl px-4 py-3 font-bold text-[#4A4035] outline-none border-2 border-transparent focus:border-[#DCD5C6]">
+    <div id="day-view" class="view">
+        <div class="header" style="margin-bottom: 15px;">
+            <h1 id="selected-date-display" style="font-size: 36px; color: var(--text-dark); text-align: center; width: 100%;">3月15日</h1>
+        </div>
+
+        <div class="quote-box">
+            <span id="daily-quote">加載中...</span>
+            <img src="clay_heart.png" alt="heart">
+        </div>
+
+        <div class="clay-card">
+            <div id="records-list"></div>
+
+            <div class="upload-area" onclick="document.getElementById('file-input').click()">
+                <img src="clay_camera.png" style="width: 55px; margin-bottom: 10px; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.1));">
+                <p style="margin:0; font-size:18px;">📸 點擊上傳今日美食/飲料<br><span style="font-size:14px; color:var(--text-light); font-weight:500;">(自動套用可愛拍立得白框！)</span></p>
+                <input type="file" id="file-input" accept="image/*" onchange="handleImageUpload(event)">
+            </div>
+            
+            <div class="input-group">
+                <label>
+                    <img src="clay_receipt.png" style="width: 32px; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.1));">
+                    💸 花費開銷 (元)
+                </label>
+                <input type="number" id="cost-input" placeholder="例如：150" inputmode="numeric">
             </div>
 
-            <button onclick="saveRecord()" class="w-full bg-[#B8A690] text-white font-bold py-4 rounded-xl shadow-sm hover:bg-[#A3927D] transition">
-                儲存美好瞬間
-            </button>
+            <button class="btn" onclick="saveRecord()">儲存這筆紀錄</button>
+            <div id="action-buttons" style="display: flex; gap: 10px;">
+                <button class="btn secondary" style="flex: 1;" onclick="exportDaily()">下載日曆紙</button>
+                <button class="btn danger" style="flex: 1; display: none;" id="delete-btn" onclick="deleteRecord()">刪除紀錄</button>
+            </div>
+            <button class="btn secondary" style="margin-top: 5px; background: transparent; box-shadow: none; border:none; color: var(--text-light);" onclick="goHome()">返回行事曆</button>
         </div>
+        <div class="footer">© 2026 an App a Day Project.</div>
     </div>
 </div>
 
-<div id="view-modal" class="modal">
-    <div class="bg-white w-full max-w-sm rounded-3xl p-6 relative">
-        <button onclick="closeModal('view-modal')" class="absolute top-4 right-5 text-[#857A6F] font-bold text-xl">&times;</button>
+<div id="warning-modal" class="modal-overlay">
+    <div class="clay-card modal-box">
+        <h3 style="color: var(--text-dark); margin-top:0; text-align: center; font-size: 22px;">⚠️ 紀錄保存小提醒</h3>
+        <p style="color: var(--primary); font-weight: 900; text-align: center; margin-bottom: 15px;">為了保護您的珍貴回憶，請務必閱讀：</p>
+        <ul class="warning-list">
+            <li><b>無痕模式不可用</b>：請勿使用 Safari/Chrome 的「無痕/隱私模式」，關閉分頁後紀錄會全部消失喔！</li>
+            <li><b>別清除瀏覽紀錄</b>：若手動清除手機的「網站資料與瀏覽紀錄」，小抽屜裡的紀錄也會被清空。</li>
+            <li><b>認明專屬設備</b>：紀錄是綁定在您現在這台手機和瀏覽器上的，換電腦或換瀏覽器是看不到紀錄的。</li>
+            <li><b>強烈建議加入主畫面</b>：手機桌面的 App 版和 Safari 網頁版的紀錄是「分開的」。強烈建議先將本網站「加入主畫面」，再開始第一筆紀錄！</li>
+            <li><b>換手機前請備份</b>：未來若要換新手機，請務必先使用底部的「備份/還原」功能，才能把回憶帶走。</li>
+        </ul>
+        <label class="checkbox-label">
+            <input type="checkbox" id="hide-warning-cb">
+            下次不需要顯示此提醒
+        </label>
+        <button class="btn" style="margin-bottom: 0;" onclick="closeWarningModal()">我知道了，開始紀錄！</button>
+    </div>
+</div>
+
+<div id="backup-modal" class="modal-overlay">
+    <div class="clay-card modal-box">
+        <h3 style="color: var(--text-dark); margin-top:0; text-align: center; font-size: 22px;">📦 備份與還原紀錄</h3>
+        <p style="color: var(--text-light); font-size: 15px; line-height: 1.6; font-weight: 500; margin-bottom: 25px;">
+            這裡可以將您的飲食紀錄打包下載成一個專屬小檔案。<br><br>
+            <b style="color:var(--text-dark);">如何備份？</b><br>點擊下方「下載備份檔」，並好好保存這個 JSON 檔案。<br><br>
+            <b style="color:var(--text-dark);">如何還原？</b><br>換新手機或剛加入主畫面時，點擊「匯入備份檔」選擇該檔案，就能找回所有回憶囉！
+        </p>
         
-        <div class="flex justify-center -mt-12 mb-4">
-            <img src="./clay_heart.png" class="w-20 h-20 drop-shadow-md">
-        </div>
-
-        <div id="view-date" class="text-center text-[#857A6F] font-bold mb-4"></div>
+        <button class="btn" onclick="exportBackup()">⬇️ 下載備份檔</button>
         
-        <div class="bg-white p-3 rounded-lg shadow-md mb-6 transform rotate-1">
-            <img id="view-image" class="w-full aspect-[4/3] object-cover rounded shadow-inner mb-3">
-            <div id="view-expense" class="text-center font-black text-xl text-[#4A4035]"></div>
+        <div class="upload-area" style="padding: 15px; margin-bottom: 15px; border-width: 2px;" onclick="document.getElementById('import-file').click()">
+            <p style="margin:0; font-size: 16px;">⬆️ 點擊匯入備份檔</p>
+            <input type="file" id="import-file" accept=".json" onchange="importBackup(event)">
         </div>
-
-        <div class="speech-bubble mb-6 text-[#857A6F] font-bold" id="view-quote"></div>
-
-        <div class="flex gap-3">
-            <button onclick="downloadImage()" class="flex-1 bg-[#4A4035] text-white font-bold py-3 rounded-xl hover:bg-[#605548] transition">下載日曆紙</button>
-            <button onclick="deleteRecord()" class="flex-1 bg-[#FF6B6B] text-white font-bold py-3 rounded-xl hover:bg-[#FF4F4F] transition shadow-sm">刪除紀錄</button>
-        </div>
+        
+        <button class="btn secondary" style="margin-bottom:0;" onclick="closeBackupModal()">返回</button>
     </div>
 </div>
 
-<div id="capture-area">
-    <div class="flex items-center gap-4 mb-10 mt-10">
-        <img src="./clay_heart.png" class="w-16 h-16">
-        <div class="text-4xl font-black text-[#4A4035]" id="cap-date">2026.03.15</div>
-    </div>
-    
-    <div class="bg-white p-6 rounded-2xl shadow-xl w-full mb-12 relative">
-        <img src="./clay_camera.png" class="absolute -top-6 -right-6 w-20 h-20 z-10 transform rotate-12">
-        <div class="w-full aspect-square bg-gray-100 rounded-xl overflow-hidden shadow-inner mb-6">
-            <img id="cap-image" class="w-full h-full object-cover">
-        </div>
-        <div class="text-center font-black text-3xl text-[#4A4035]" id="cap-expense"></div>
-    </div>
-
-    <div class="speech-bubble w-full text-3xl text-[#857A6F] font-bold mb-16" id="cap-quote"></div>
-
-    <div class="flex items-center gap-4 mt-auto opacity-70">
-        <img src="./icon.png" class="w-16 h-16">
-        <div>
-            <div class="text-2xl font-black text-[#4A4035] tracking-widest mb-1">一口日曆</div>
-            <div class="text-lg font-bold text-[#857A6F] tracking-widest">Bite a Calendar</div>
-        </div>
-    </div>
-</div>
+<div id="export-container"></div>
 
 <script>
-    // 預設療癒金句庫 (確保第一句結尾有逗點「，」)
-    const quotes = [
-        "今天辛苦了，<br>來點甜的犒賞自己吧！",
-        "不管世界多吵雜，<br>記得把心留給自己。",
-        "大口吃下美食，<br>把煩惱通通忘掉！",
-        "花錢買快樂，<br>這筆投資非常值得。",
-        "生活需要儀式感，<br>就從好好吃一頓開始。"
-    ];
-
+    const appQuotes = window.biteCalendarQuotes || ["辛苦了，來點甜的犒賞自己吧！"];
     let currentDate = new Date();
-    let records = JSON.parse(localStorage.getItem('biteRecords')) || {};
     let selectedDateStr = "";
+    let uploadedImageBase64 = null;
+    let records = JSON.parse(localStorage.getItem('biteCalendarRecords')) || {};
 
-    // 初始化
-    function init() {
-        renderCalendar();
-        updateTotalExpense();
+    function init() { 
+        renderCalendar(); 
+        checkWarningModal(); 
     }
 
-    // 渲染月曆
+    /* --- 彈出視窗與備份邏輯 --- */
+    function checkWarningModal() {
+        const hideWarning = localStorage.getItem('biteCalendarHideWarning');
+        if (hideWarning !== 'true') {
+            document.getElementById('warning-modal').classList.add('show');
+        }
+    }
+
+    function closeWarningModal() {
+        const isChecked = document.getElementById('hide-warning-cb').checked;
+        if (isChecked) {
+            localStorage.setItem('biteCalendarHideWarning', 'true');
+        }
+        document.getElementById('warning-modal').classList.remove('show');
+    }
+
+    function openBackupModal() { document.getElementById('backup-modal').classList.add('show'); }
+    function closeBackupModal() { document.getElementById('backup-modal').classList.remove('show'); }
+
+    function exportBackup() {
+        if (Object.keys(records).length === 0) {
+            alert("目前還沒有任何紀錄可以備份喔！");
+            return;
+        }
+        const dataStr = JSON.stringify(records);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const today = new Date().toISOString().split('T')[0];
+        a.download = `BiteCalendar_Backup_${today}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function importBackup(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                if (typeof importedData === 'object' && importedData !== null && !Array.isArray(importedData)) {
+                    if (confirm("匯入備份將會與目前的紀錄合併（若日期重複則直接覆蓋舊照片）。確定要匯入嗎？")) {
+                        records = { ...records, ...importedData };
+                        localStorage.setItem('biteCalendarRecords', JSON.stringify(records));
+                        renderCalendar();
+                        alert('還原成功！歡迎回來，回憶都找回來囉！');
+                        closeBackupModal();
+                    }
+                } else throw new Error("格式錯誤");
+            } catch (err) {
+                alert('檔案格式錯誤，請確保上傳的是正確的備份檔喔！');
+            }
+            event.target.value = ''; 
+        };
+        reader.readAsText(file);
+    }
+
+    /* --- 行事曆與紀錄邏輯 --- */
     function renderCalendar() {
+        const grid = document.getElementById('calendar-grid');
+        const monthDisplay = document.getElementById('month-year-display');
+        grid.innerHTML = '';
+        
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
-        document.getElementById('month-display').innerText = `${year} 年 ${month + 1} 月`;
+        monthDisplay.innerText = `${year} 年 ${month + 1} 月`;
 
         const firstDay = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const body = document.getElementById('calendar-body');
-        body.innerHTML = '';
 
-        // 填補月初空白
-        for (let i = 0; i < firstDay; i++) {
-            body.innerHTML += `<div class="calendar-cell empty"></div>`;
-        }
+        const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+        weekdays.forEach(day => {
+            const div = document.createElement('div');
+            div.className = 'weekday'; div.innerText = day; grid.appendChild(div);
+        });
 
-        // 生成日期格子
+        for (let i = 0; i < firstDay; i++) { grid.appendChild(document.createElement('div')); }
+
+        let monthlyTotal = 0;
         for (let i = 1; i <= daysInMonth; i++) {
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-            const hasRecord = records[dateStr];
+            const cell = document.createElement('div');
+            cell.className = 'day-cell';
             
-            // 如果有紀錄，顯示縮圖，並調整文字顏色為白色加陰影
-            let innerHTML = `<span class="cell-date ${hasRecord ? 'text-white' : ''}">${i}</span>`;
-            if (hasRecord && hasRecord.img) {
-                innerHTML += `<img src="${hasRecord.img}" class="record-thumb">`;
+            const numSpan = document.createElement('span');
+            numSpan.innerText = i; cell.appendChild(numSpan);
+            cell.onclick = () => openDayView(dateStr);
+
+            if (records[dateStr] && records[dateStr].length > 0) {
+                cell.classList.add('has-record');
+                if (records[dateStr][0].img) {
+                    const thumb = document.createElement('img');
+                    thumb.src = records[dateStr][0].img;
+                    thumb.className = 'thumbnail';
+                    cell.appendChild(thumb);
+                }
+                records[dateStr].forEach(r => monthlyTotal += parseInt(r.cost || 0));
             }
-
-            body.innerHTML += `
-                <div class="calendar-cell" onclick="handleDateClick('${dateStr}')">
-                    ${innerHTML}
-                </div>
-            `;
+            grid.appendChild(cell);
         }
+        document.getElementById('monthly-total').innerText = monthlyTotal.toLocaleString();
     }
 
-    function changeMonth(delta) {
-        currentDate.setMonth(currentDate.getMonth() + delta);
-        renderCalendar();
-    }
+    function changeMonth(offset) { currentDate.setMonth(currentDate.getMonth() + offset); renderCalendar(); }
 
-    // 點擊日期
-    function handleDateClick(dateStr) {
+    function openDayView(dateStr) {
         selectedDateStr = dateStr;
-        if (records[dateStr]) {
-            viewRecord(dateStr);
+        const [y, m, d] = dateStr.split('-');
+        document.getElementById('selected-date-display').innerText = `${parseInt(m)}月${parseInt(d)}日`;
+        
+        const start = new Date(y, 0, 0);
+        const diff = (new Date(dateStr) - start) + ((start.getTimezoneOffset() - new Date(dateStr).getTimezoneOffset()) * 60 * 1000);
+        const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
+        
+        const rawQuote = appQuotes[(dayOfYear - 1) % appQuotes.length];
+        // 強制轉換成兩行，在逗號處換行
+        const formattedQuote = rawQuote.includes('，') ? rawQuote.replace('，', '，<br>') : rawQuote;
+        document.getElementById('daily-quote').innerHTML = formattedQuote;
+
+        // 判斷是否顯示刪除按鈕
+        const deleteBtn = document.getElementById('delete-btn');
+        if (records[selectedDateStr] && records[selectedDateStr].length > 0) {
+            deleteBtn.style.display = 'block';
         } else {
-            document.getElementById('modal-date-title').innerText = `新增紀錄 (${dateStr})`;
-            document.getElementById('image-preview').src = '';
-            document.getElementById('image-preview').classList.add('hidden');
-            document.getElementById('image-preview-container').querySelector('span').classList.remove('hidden');
-            document.getElementById('expense-input').value = '';
-            document.getElementById('image-input').value = '';
-            openModal('add-modal');
+            deleteBtn.style.display = 'none';
         }
+
+        renderDayRecords();
+        document.getElementById('home-view').classList.remove('active');
+        document.getElementById('day-view').classList.add('active');
+        window.scrollTo(0,0);
     }
 
-    // 預覽圖片
-    function previewImage(event) {
+    function goHome() {
+        uploadedImageBase64 = null;
+        document.getElementById('cost-input').value = '';
+        renderCalendar();
+        document.getElementById('day-view').classList.remove('active');
+        document.getElementById('home-view').classList.add('active');
+        window.scrollTo(0,0);
+    }
+
+    function handleImageUpload(event) {
         const file = event.target.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                const img = document.getElementById('image-preview');
-                img.src = e.target.result;
-                img.classList.remove('hidden');
-                document.getElementById('image-preview-container').querySelector('span').classList.add('hidden');
-            }
+                uploadedImageBase64 = e.target.result;
+                renderDayRecords(); // 預覽
+            };
             reader.readAsDataURL(file);
         }
     }
 
-    // 儲存紀錄
     function saveRecord() {
-        const expense = document.getElementById('expense-input').value;
-        const img = document.getElementById('image-preview').src;
-        
-        if (!expense || img.includes('html')) {
-            alert('請上傳照片並輸入金額喔！');
-            return;
+        const costVal = document.getElementById('cost-input').value;
+        if (!uploadedImageBase64 && !costVal && (!records[selectedDateStr] || records[selectedDateStr].length === 0)) {
+            alert('請至少上傳一張照片或輸入開銷喔！'); return;
         }
-
-        // 隨機抽取一句強制兩行的金句
-        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-
-        records[selectedDateStr] = {
-            expense: parseInt(expense),
-            img: img,
-            quote: randomQuote
-        };
-
-        localStorage.setItem('biteRecords', JSON.stringify(records));
-        closeModal('add-modal');
-        renderCalendar();
-        updateTotalExpense();
-    }
-
-    // 查看紀錄
-    function viewRecord(dateStr) {
-        const record = records[dateStr];
-        document.getElementById('view-date').innerText = dateStr.replace(/-/g, '.');
-        document.getElementById('view-image').src = record.img;
-        document.getElementById('view-expense').innerText = `$ ${record.expense}`;
-        document.getElementById('view-quote').innerHTML = record.quote; // 使用 innerHTML 渲染 <br>
         
-        // 同步填入隱藏截圖區
-        document.getElementById('cap-date').innerText = dateStr.replace(/-/g, '.');
-        document.getElementById('cap-image').src = record.img;
-        document.getElementById('cap-expense').innerText = `花費 $${record.expense}`;
-        document.getElementById('cap-quote').innerHTML = record.quote;
+        // 若已有舊資料且有新上傳，這裡做覆寫 (維持單日單圖的簡單邏輯)
+        records[selectedDateStr] = [{
+            img: uploadedImageBase64 || (records[selectedDateStr] ? records[selectedDateStr][0].img : ''),
+            cost: costVal || (records[selectedDateStr] ? records[selectedDateStr][0].cost : 0)
+        }];
 
-        openModal('view-modal');
+        localStorage.setItem('biteCalendarRecords', JSON.stringify(records));
+        uploadedImageBase64 = null;
+        document.getElementById('cost-input').value = '';
+        
+        renderDayRecords();
+        document.getElementById('delete-btn').style.display = 'block';
+        alert('紀錄成功！已貼上今日日曆。');
     }
 
-    // 刪除紀錄 (新增功能)
     function deleteRecord() {
-        if(confirm("確定要刪除這筆紀錄嗎？一旦刪除就吃不回來囉！")) {
+        if (confirm("確定要刪除這筆紀錄嗎？一旦刪除就吃不回來囉！")) {
             delete records[selectedDateStr];
-            localStorage.setItem('biteRecords', JSON.stringify(records));
-            closeModal('view-modal');
-            renderCalendar();
-            updateTotalExpense();
+            localStorage.setItem('biteCalendarRecords', JSON.stringify(records));
+            goHome(); // 刪除後返回主頁
         }
     }
 
-    // 下載精美日曆紙 (修復比例問題)
-    function downloadImage() {
-        const target = document.getElementById('capture-area');
+    function renderDayRecords() {
+        const list = document.getElementById('records-list');
+        list.innerHTML = '';
+        let currentRecord = (records[selectedDateStr] && records[selectedDateStr].length > 0) ? records[selectedDateStr][0] : null;
         
-        // 確保截圖時圖片已完全載入
-        setTimeout(() => {
-            html2canvas(target, { 
-                scale: 2, 
-                useCORS: true,
-                backgroundColor: null // 保留漸層背景
-            }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = `一口日曆_${selectedDateStr}.jpg`;
-                link.href = canvas.toDataURL('image/jpeg', 0.9);
-                link.click();
-            });
-        }, 100);
-    }
+        // 優先顯示剛上傳的預覽圖
+        let imgSrc = uploadedImageBase64 || (currentRecord ? currentRecord.img : null);
+        let costVal = (currentRecord ? currentRecord.cost : 0);
 
-    // 更新總花費
-    function updateTotalExpense() {
-        const currentMonthPrefix = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
-        let total = 0;
-        for (const date in records) {
-            if (date.startsWith(currentMonthPrefix)) {
-                total += records[date].expense;
+        if (imgSrc || costVal > 0) {
+            const wrapper = document.createElement('div');
+            if (imgSrc) {
+                const img = document.createElement('img');
+                img.src = imgSrc;
+                img.className = 'sticker-img';
+                img.style.transform = `rotate(${Math.random() * 4 - 2}deg)`;
+                wrapper.appendChild(img);
             }
+            if (costVal > 0) {
+                const costDiv = document.createElement('div');
+                costDiv.className = 'record-cost';
+                costDiv.innerText = `$ ${costVal}`;
+                wrapper.appendChild(costDiv);
+            }
+            list.appendChild(wrapper);
         }
-        document.getElementById('total-expense').innerText = total;
+    }
+    
+    async function exportDaily() {
+        const container = document.getElementById('export-container');
+        const quoteHtml = document.getElementById('daily-quote').innerHTML;
+        const [y, m, d] = selectedDateStr.split('-');
+        
+        let imagesHtml = '';
+        let totalCost = 0;
+        if(records[selectedDateStr]){
+            records[selectedDateStr].forEach(r => {
+                if(r.img) {
+                    const rotation = Math.random() * 4 - 2;
+                    // 修復壓扁：aspect-ratio: 1 加上 object-fit: cover
+                    imagesHtml += `
+                        <div style="position:relative; margin-bottom: 40px; transform: rotate(${rotation}deg);">
+                            <img src="${r.img}" style="width: 85%; aspect-ratio: 1; object-fit: cover; border: 20px solid white; border-bottom-width: 80px; border-radius: 12px; box-shadow: 0 15px 35px rgba(74, 64, 53, 0.15); display:block; margin: 0 auto;">
+                            ${r.cost > 0 ? `<div style="position:absolute; bottom:20px; width:100%; text-align:center; font-size:40px; font-weight:900; color:#4A4035; font-family:'GenJyuu', sans-serif;">$ ${r.cost}</div>` : ''}
+                        </div>`;
+                }
+                totalCost += parseInt(r.cost || 0);
+            });
+        }
+
+        container.innerHTML = `
+            <div style="background-color: #F8F6F0; padding: 60px; font-family: 'GenJyuu', sans-serif;">
+                <div style="background: white; padding: 80px 60px; border-radius: 40px; box-shadow: 10px 10px 40px rgba(74, 64, 53, 0.06); text-align: center; position:relative; overflow:hidden;">
+                    <div style="position:absolute; top:20px; left:20px; right:20px; bottom:20px; border: 4px dashed #E6DFD3; border-radius: 30px; pointer-events:none;"></div>
+                    
+                    <h3 style="font-size: 36px; color: #B8A690; margin: 0 0 10px 0; font-weight:900;">${y} 年 ${parseInt(m)} 月</h3>
+                    <h2 style="font-size: 160px; color: #4A4035; margin: 0; font-weight: 900; line-height: 1;">${parseInt(d)}</h2>
+                    
+                    <div style="position: relative; background: #fff; border-radius: 30px; padding: 40px; font-size: 42px; color: #857A6F; font-weight: 900; line-height: 1.6; box-shadow: 0 15px 35px rgba(133, 122, 111, 0.15); border: 4px solid #E6DFD3; margin: 60px auto; width: 85%;">
+                        "${quoteHtml}"
+                        <div style="position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); border-width: 30px 30px 0; border-style: solid; border-color: #fff transparent transparent transparent; z-index: 2;"></div>
+                        <div style="position: absolute; bottom: -36px; left: 50%; transform: translateX(-50%); border-width: 36px 36px 0; border-style: solid; border-color: #E6DFD3 transparent transparent transparent; z-index: 1;"></div>
+                    </div>
+                    
+                    <div style="margin-top:80px;">${imagesHtml}</div>
+                    
+                    <div style="font-size: 40px; font-weight: 900; color: #4A4035; margin-top: 50px;">本日嘴饞開銷: $ ${totalCost.toLocaleString()}</div>
+                    
+                    <div style="display: flex; align-items: center; justify-content: center; margin-top: 80px; padding-top: 40px; border-top: 3px dashed #E6DFD3;">
+                        <img src="icon.png" style="width: 80px; height: 80px; object-fit: contain; margin-right: 20px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));">
+                        <div style="text-align: left;">
+                            <div style="font-size: 36px; font-weight: 900; color: #4A4035; letter-spacing: 2px; margin-bottom: 5px;">一口日曆</div>
+                            <div style="font-size: 22px; font-weight: 900; color: #B8A690; letter-spacing: 1px;">Bite a Calendar</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        await triggerDownload(container, `BiteCalendar_${selectedDateStr}.png`);
     }
 
-    function openModal(id) { document.getElementById(id).classList.add('active'); }
-    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    async function exportMonthly() {
+        const container = document.getElementById('export-container');
+        const cloneGrid = document.getElementById('calendar-grid').innerHTML;
+        const title = document.getElementById('month-year-display').innerText;
+        const total = document.getElementById('monthly-total').innerText;
 
-    // 啟動
+        container.innerHTML = `
+            <div style="background: #F8F6F0; padding: 80px; font-family: 'GenJyuu', sans-serif;">
+                <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+                    <img src="icon.png" style="width: 100px; margin-right: 25px;">
+                    <div style="text-align: left;">
+                        <h1 style="font-size: 60px; color: #4A4035; margin: 0 0 10px 0; font-weight:900;">一口日曆</h1>
+                        <h2 style="font-size: 30px; color: #B8A690; margin: 0; font-weight:900;">Bite a Calendar</h2>
+                    </div>
+                </div>
+                <h2 style="text-align:center; font-size: 45px; color: #857A6F; margin-bottom: 60px;">${title} 嘴饞總結報告</h2>
+                
+                <div style="background: white; padding: 50px; border-radius: 40px; box-shadow: 10px 10px 40px rgba(74, 64, 53, 0.06);">
+                    <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 20px; text-align: center;">
+                        ${cloneGrid.replace(/width: 100%; height: 100%;/g, 'width: 100%; aspect-ratio: 1; border: 6px solid white; border-radius: 16px; box-shadow: 0 4px 10px rgba(74,64,53,0.1);')} 
+                    </div>
+                </div>
+
+                <div style="text-align:center; font-size: 50px; font-weight:900; color: #B8A690; margin-top: 70px;">
+                    本月總開銷: $ ${total}
+                </div>
+                <div style="text-align:center; margin-top: 80px; font-size: 28px; color: #857A6F; font-weight:700;">
+                    下個月也要好好吃飯喔！<br><br>© 2026 an App a Day Project.
+                </div>
+            </div>
+        `;
+
+        const cells = container.querySelectorAll('.day-cell');
+        cells.forEach(c => { 
+            c.style.fontSize = '35px'; 
+            c.style.borderRadius = '20px'; 
+            c.style.background = '#F8F6F0';
+            c.style.boxShadow = 'inset 4px 4px 10px #E0D7C9, inset -4px -4px 10px #FFFFFF';
+            if(c.classList.contains('has-record')){
+                c.style.background = 'white';
+                c.style.boxShadow = '4px 4px 10px #E0D7C9, -4px -4px 10px #FFFFFF';
+            }
+        });
+        const weekdays = container.querySelectorAll('.weekday');
+        weekdays.forEach(w => { w.style.fontSize = '35px'; w.style.marginBottom = '30px'; w.style.color = '#B8A690'; });
+
+        await triggerDownload(container, `BiteCalendar_MonthlyStats.png`);
+    }
+
+    async function triggerDownload(element, filename) {
+        try {
+            await new Promise(r => setTimeout(r, 300)); 
+            const canvas = await html2canvas(element, { scale: 1.5, backgroundColor: null, useCORS: true });
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            element.innerHTML = ''; 
+        } catch (error) {
+            console.error("圖片生成失敗", error);
+            alert("匯出圖片時發生錯誤，請稍後再試。");
+            element.innerHTML = '';
+        }
+    }
+
     init();
 </script>
 </body>
