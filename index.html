@@ -28,7 +28,6 @@
             --text-dark: #4A4035;     /* 深焙咖啡色 */
             --text-light: #857A6F;    /* 淺焙咖啡色 */
             
-            /* 調整陰影以配合燕麥底色 */
             --clay-shadow: 6px 6px 14px #E0D7C9, -6px -6px 14px #FFFFFF;
             --clay-inset: inset 3px 3px 6px rgba(255, 255, 255, 0.9), inset -3px -3px 6px rgba(74, 64, 53, 0.05);
             --sticker-shadow: 0 8px 16px rgba(74, 64, 53, 0.08);
@@ -52,7 +51,6 @@
         .header h1 { font-weight: 900; color: var(--text-dark); margin: 10px 0 5px; font-size: 32px; letter-spacing: 1px;}
         .header h2 { margin:0 0 10px 0; font-size:16px; color:var(--primary); font-weight:900; }
         .header p { font-weight: 500; color: var(--text-light); margin: 0; font-size: 14px; }
-        
         .header-icon { width: 60px; position: absolute; top: -15px; right: 10px; animation: float 3s ease-in-out infinite; }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 
@@ -90,8 +88,6 @@
             transition: transform 0.1s;
         }
         .day-cell:active { transform: scale(0.9); }
-        
-        /* 有紀錄的日期樣式 */
         .day-cell.has-record { box-shadow: 3px 3px 8px #E0D7C9, -3px -3px 8px #FFFFFF; background: white; padding: 4px;}
         .day-cell .thumbnail { 
             width: 100%; height: 100%; border-radius: 8px; object-fit: cover; 
@@ -135,13 +131,38 @@
             border: 12px solid white; border-bottom-width: 35px; border-radius: 8px; 
             box-shadow: var(--sticker-shadow); object-fit: cover;
         }
-
         .record-cost { text-align: center; font-weight: 900; font-size: 20px; color: var(--text-dark); margin-top: -45px; margin-bottom: 30px; position: relative; z-index: 10; font-family: 'GenJyuu', sans-serif;}
 
         /* --- 8. 底部 --- */
         .footer { text-align: center; font-size: 13px; color: var(--text-light); padding: 20px 0; margin-top: auto; font-weight: 700; letter-spacing: 1px;}
 
-        /* --- 9. 隱藏的截圖專用區 --- */
+        /* --- 9. 彈出視窗 (Modal) 樣式 --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(74, 64, 53, 0.5); backdrop-filter: blur(3px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.show { opacity: 1; pointer-events: auto; }
+        
+        .modal-box {
+            width: 90%; max-width: 400px; max-height: 85vh; overflow-y: auto;
+            margin: 0; /* 覆蓋 clay-card 的 margin */
+            animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .warning-list { color: var(--text-light); padding-left: 20px; font-size: 15px; line-height: 1.6; font-weight: 500;}
+        .warning-list li { margin-bottom: 12px; }
+        .warning-list b { color: var(--text-dark); font-weight: 900;}
+
+        .checkbox-label {
+            display: flex; align-items: center; justify-content: center; font-size: 15px; 
+            color: var(--text-light); margin: 20px 0; cursor: pointer; font-weight: 700;
+        }
+        .checkbox-label input { width: 18px; height: 18px; margin-right: 8px; accent-color: var(--primary); }
+
+        /* --- 10. 隱藏的截圖專用區 --- */
         #export-container { position: absolute; top: -9999px; left: -9999px; width: 1080px; background: var(--bg-color); padding: 0; }
     </style>
 </head>
@@ -171,6 +192,8 @@
         </div>
 
         <button class="btn" onclick="exportMonthly()">打包本月月曆 (分享圖)</button>
+        <button class="btn secondary" style="font-size: 16px; padding: 12px 24px;" onclick="openBackupModal()">📦 備份 / 還原紀錄</button>
+        
         <div class="footer">© 2026 an App a Day Project.</div>
     </div>
 
@@ -205,19 +228,135 @@
     </div>
 </div>
 
+<div id="warning-modal" class="modal-overlay">
+    <div class="clay-card modal-box">
+        <h3 style="color: var(--text-dark); margin-top:0; text-align: center; font-size: 22px;">⚠️ 紀錄保存小提醒</h3>
+        <p style="color: var(--primary); font-weight: 900; text-align: center; margin-bottom: 15px;">為了保護您的珍貴回憶，請務必閱讀：</p>
+        <ul class="warning-list">
+            <li><b>無痕模式不可用</b>：請勿使用 Safari/Chrome 的「無痕/隱私模式」，關閉分頁後紀錄會全部消失喔！</li>
+            <li><b>別清除瀏覽紀錄</b>：若手動清除手機的「網站資料與瀏覽紀錄」，小抽屜裡的紀錄也會被清空。</li>
+            <li><b>認明專屬設備</b>：紀錄是綁定在您現在這台手機和瀏覽器上的，換電腦或換瀏覽器是看不到紀錄的。</li>
+            <li><b>強烈建議加入主畫面</b>：手機桌面的 App 版和 Safari 網頁版的紀錄是「分開的」。強烈建議先將本網站「加入主畫面」，再開始第一筆紀錄！</li>
+            <li><b>換手機前請備份</b>：未來若要換新手機，請務必先使用底部的「備份/還原」功能，才能把回憶帶走。</li>
+        </ul>
+        <label class="checkbox-label">
+            <input type="checkbox" id="hide-warning-cb">
+            下次不需要顯示此提醒
+        </label>
+        <button class="btn" style="margin-bottom: 0;" onclick="closeWarningModal()">我知道了，開始紀錄！</button>
+    </div>
+</div>
+
+<div id="backup-modal" class="modal-overlay">
+    <div class="clay-card modal-box">
+        <h3 style="color: var(--text-dark); margin-top:0; text-align: center; font-size: 22px;">📦 備份與還原紀錄</h3>
+        <p style="color: var(--text-light); font-size: 15px; line-height: 1.6; font-weight: 500; margin-bottom: 25px;">
+            這裡可以將您的飲食紀錄打包下載成一個專屬小檔案。<br><br>
+            <b style="color:var(--text-dark);">如何備份？</b><br>點擊下方「下載備份檔」，並好好保存這個 JSON 檔案。<br><br>
+            <b style="color:var(--text-dark);">如何還原？</b><br>換新手機或剛加入主畫面時，點擊「匯入備份檔」選擇該檔案，就能找回所有回憶囉！
+        </p>
+        
+        <button class="btn" onclick="exportBackup()">⬇️ 下載備份檔</button>
+        
+        <div class="upload-area" style="padding: 15px; margin-bottom: 15px; border-width: 2px;" onclick="document.getElementById('import-file').click()">
+            <p style="margin:0; font-size: 16px;">⬆️ 點擊匯入備份檔</p>
+            <input type="file" id="import-file" accept=".json" onchange="importBackup(event)">
+        </div>
+        
+        <button class="btn secondary" style="margin-bottom:0;" onclick="closeBackupModal()">返回</button>
+    </div>
+</div>
+
 <div id="export-container"></div>
 
 <script>
-    // 確保 quotes.js 有正確載入
     const appQuotes = window.biteCalendarQuotes || ["記得每天都要好好吃飯喔！"];
-
     let currentDate = new Date();
     let selectedDateStr = "";
     let uploadedImageBase64 = null;
     let records = JSON.parse(localStorage.getItem('biteCalendarRecords')) || {};
 
-    function init() { renderCalendar(); }
+    function init() { 
+        renderCalendar(); 
+        checkWarningModal(); // 檢查是否需要跳出防雷提醒
+    }
 
+    /* --- 彈出視窗與備份邏輯 --- */
+    function checkWarningModal() {
+        const hideWarning = localStorage.getItem('biteCalendarHideWarning');
+        if (hideWarning !== 'true') {
+            document.getElementById('warning-modal').classList.add('show');
+        }
+    }
+
+    function closeWarningModal() {
+        const isChecked = document.getElementById('hide-warning-cb').checked;
+        if (isChecked) {
+            localStorage.setItem('biteCalendarHideWarning', 'true');
+        }
+        document.getElementById('warning-modal').classList.remove('show');
+    }
+
+    function openBackupModal() {
+        document.getElementById('backup-modal').classList.add('show');
+    }
+
+    function closeBackupModal() {
+        document.getElementById('backup-modal').classList.remove('show');
+    }
+
+    // 匯出 JSON 備份檔
+    function exportBackup() {
+        if (Object.keys(records).length === 0) {
+            alert("目前還沒有任何紀錄可以備份喔！");
+            return;
+        }
+        const dataStr = JSON.stringify(records);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        // 檔名加上今天的日期
+        const today = new Date().toISOString().split('T')[0];
+        a.download = `BiteCalendar_Backup_${today}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // 匯入 JSON 備份檔
+    function importBackup(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                // 簡單檢查格式是否為物件
+                if (typeof importedData === 'object' && importedData !== null && !Array.isArray(importedData)) {
+                    // 確認覆蓋提示
+                    const confirmImport = confirm("匯入備份將會與目前的紀錄合併（若日期重複則直接覆蓋舊照片）。確定要匯入嗎？");
+                    if (confirmImport) {
+                        // 將匯入的資料合併進目前的 records
+                        records = { ...records, ...importedData };
+                        localStorage.setItem('biteCalendarRecords', JSON.stringify(records));
+                        renderCalendar();
+                        alert('還原成功！歡迎回來，回憶都找回來囉！');
+                        closeBackupModal();
+                    }
+                } else {
+                    throw new Error("格式錯誤");
+                }
+            } catch (err) {
+                alert('檔案格式錯誤，請確保上傳的是正確的 BiteCalendar .json 備份檔喔！');
+            }
+            // 清空 input，讓使用者可以重複選擇同一個檔案
+            event.target.value = ''; 
+        };
+        reader.readAsText(file);
+    }
+
+    /* --- 行事曆與紀錄邏輯 (維持原樣) --- */
     function renderCalendar() {
         const grid = document.getElementById('calendar-grid');
         const monthDisplay = document.getElementById('month-year-display');
@@ -363,7 +502,6 @@
         }
     }
     
-    // 匯出功能色系已同步更新為燕麥/奶茶色 (#F8F6F0, #B8A690, #4A4035)
     async function exportDaily() {
         const container = document.getElementById('export-container');
         const quote = document.getElementById('daily-quote').innerText;
