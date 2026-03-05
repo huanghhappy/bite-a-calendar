@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>一口日曆 | Bite a Calendar</title>
     <meta property="og:title" content="一口日曆 Bite a Calendar">
-    <meta property="og:description" content="一口美食．一口飲料．一句溫暖｜你的專屬嘴饞充電站">
+    <meta property="og:description" content="一口美食，一口飲料，一句溫暖。你的專屬嘴饞充電站！">
     <meta property="og:image" content="social.png">
     <link rel="apple-touch-icon" href="logo.png">
     <link rel="icon" href="logo.png">
@@ -46,25 +46,25 @@
             display: flex; flex-direction: column; position: relative;
         }
 
-        /* --- 3. 標題區 (主標等寬置中) --- */
-        .header { 
-            display: flex; align-items: center; justify-content: center; gap: 12px;
-            margin-bottom: 25px; position: relative; width: 100%;
-        }
-        .header-title-box {
-            display: flex; flex-direction: column; justify-content: center; width: 145px;
-        }
-        .header h1 { 
-            margin: 0; font-size: 32px; font-weight: 900; color: var(--text-dark); 
-            line-height: 1.1; text-align-last: justify; letter-spacing: 2px;
-        }
-        .header h2 { 
-            margin: 0; font-size: 13.5px; font-weight: 900; color: var(--primary); 
-            line-height: 1.2; text-align-last: justify; letter-spacing: 0.5px;
+        /* --- 3. 標題區 (統一排版：等寬且 Icon 更大、靠近置中) --- */
+        .header-wrapper { 
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            margin-bottom: 25px; width: 100%;
         }
         .header-icon-left { 
-            width: 55px; height: 55px; object-fit: contain;
+            width: 75px; height: 75px; object-fit: contain;
             filter: drop-shadow(2px 4px 6px rgba(74, 64, 53, 0.15)); 
+        }
+        .header-title-box {
+            display: flex; flex-direction: column; justify-content: center; width: 165px;
+        }
+        .header-title-box h1 { 
+            margin: 0; font-size: 38px; font-weight: 900; color: var(--text-dark); 
+            line-height: 1.1; text-align-last: justify; letter-spacing: 0;
+        }
+        .header-title-box h2 { 
+            margin: 0; font-size: 16px; font-weight: 900; color: var(--primary); 
+            line-height: 1.2; text-align-last: justify; letter-spacing: 0;
         }
 
         /* --- 4. 黏土風卡片與按鈕 --- */
@@ -132,9 +132,7 @@
         .quote-deco-br { position: absolute; bottom: -15px; right: -10px; width: 45px; transform: rotate(15deg); filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15)); z-index: 5;}
 
         /* 多筆紀錄排版 (一排三格) */
-        #records-list {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;
-        }
+        #records-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
         .record-item {
             background: #FFFFFF; border-radius: 12px; padding: 8px;
             box-shadow: inset 2px 2px 5px rgba(0,0,0,0.02), 0 4px 10px rgba(74,64,53,0.05);
@@ -156,11 +154,12 @@
         .upload-area:active { background: #F5EFEB; }
         .upload-area input[type="file"] { display: none; }
         
+        .input-group { margin-bottom: 20px; }
         .input-group label { display: flex; align-items: center; gap: 8px; font-weight: 900; margin-bottom: 10px; color: var(--text-dark); justify-content: center; font-size: 18px;}
-        .input-group input[type="number"] { 
+        .input-group input[type="number"], .input-group select { 
             width: 100%; padding: 16px; border-radius: 16px; border: none; text-align: center;
             box-shadow: inset 4px 4px 8px #E0D7C9, inset -4px -4px 8px #FFFFFF; 
-            font-size: 18px; background: var(--bg-color); margin-bottom: 20px; color: var(--text-dark); font-weight: 700; outline: none;
+            font-size: 18px; background: var(--bg-color); color: var(--text-dark); font-weight: 700; outline: none; appearance: none;
         }
 
         .sticker-img { 
@@ -211,10 +210,10 @@
 
 <div id="app-container">
     <div id="home-view" class="view active">
-        <div class="header">
+        <div class="header-wrapper">
             <img src="icon.png" alt="icon" class="header-icon-left">
             <div class="header-title-box">
-                <h1>一口日曆</h1>
+                <h1>一 口 日 曆</h1>
                 <h2>Bite a Calendar</h2>
             </div>
         </div>
@@ -243,11 +242,11 @@
     </div>
 
     <div id="day-view" class="view">
-        <div class="header" style="margin-bottom: 10px;">
-            <img src="icon.png" alt="icon" class="header-icon-left" style="width: 45px; height: 45px;">
-            <div class="header-title-box" style="width: 120px;">
-                <h1 style="font-size: 26px;">一口日曆</h1>
-                <h2 style="font-size: 11px;">Bite a Calendar</h2>
+        <div class="header-wrapper" style="margin-bottom: 10px;">
+            <img src="icon.png" alt="icon" class="header-icon-left">
+            <div class="header-title-box">
+                <h1>一 口 日 曆</h1>
+                <h2>Bite a Calendar</h2>
             </div>
         </div>
 
@@ -272,9 +271,21 @@
                     <input type="file" id="file-input" accept="image/*" onchange="handleImageUpload(event)">
                 </div>
                 
-                <div class="input-group">
-                    <label>花費金額 (元)</label>
-                    <input type="number" id="cost-input" placeholder="例如：150" inputmode="numeric">
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                        <label>嘴饞種類</label>
+                        <select id="category-input">
+                            <option value="正餐">正餐</option>
+                            <option value="甜點">甜點</option>
+                            <option value="宵夜">宵夜</option>
+                            <option value="飲料">飲料</option>
+                            <option value="咖啡">咖啡</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                        <label>花費金額(元)</label>
+                        <input type="number" id="cost-input" placeholder="例如：150" inputmode="numeric">
+                    </div>
                 </div>
 
                 <button class="btn" onclick="saveRecord()">儲存這筆紀錄</button>
@@ -348,11 +359,8 @@
         checkWarningModal(); 
     }
 
-    /* --- 彈出視窗與備份邏輯 --- */
     function checkWarningModal() {
-        if (localStorage.getItem('biteCalendarHideWarning') !== 'true') {
-            document.getElementById('warning-modal').classList.add('show');
-        }
+        if (localStorage.getItem('biteCalendarHideWarning') !== 'true') document.getElementById('warning-modal').classList.add('show');
     }
     function closeWarningModal() {
         if (document.getElementById('hide-warning-cb').checked) localStorage.setItem('biteCalendarHideWarning', 'true');
@@ -361,6 +369,41 @@
     function openBackupModal() { document.getElementById('backup-modal').classList.add('show'); }
     function closeBackupModal() { document.getElementById('backup-modal').classList.remove('show'); }
     function closePreview() { document.getElementById('preview-modal').classList.remove('show'); document.getElementById('preview-image').src = "";}
+
+    // ★ 關鍵防崩潰壓縮引擎：確保 LocalStorage 不會被高畫質原圖撐爆
+    function compressImage(base64Str, maxWidth = 800, quality = 0.6) {
+        return new Promise((resolve) => {
+            let img = new Image();
+            img.onload = () => {
+                let canvas = document.createElement('canvas');
+                let width = img.width, height = img.height;
+                if (width > maxWidth) {
+                    height = Math.round(height * maxWidth / width); width = maxWidth;
+                }
+                canvas.width = width; canvas.height = height;
+                let ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', quality));
+            };
+            img.src = base64Str;
+        });
+    }
+
+    function handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = async function(e) { 
+                try {
+                    uploadedImageBase64 = await compressImage(e.target.result); 
+                    alert("照片已準備好！請選擇種類、輸入金額後點擊「儲存這筆紀錄」喔！");
+                } catch(err) {
+                    alert("照片處理失敗，請重試！");
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    }
 
     function exportBackup() {
         if (Object.keys(records).length === 0) return alert("目前還沒有任何紀錄可以備份喔！");
@@ -390,11 +433,9 @@
         reader.readAsText(file);
     }
 
-    /* --- 行事曆與紀錄邏輯 --- */
     function renderCalendar() {
         const grid = document.getElementById('calendar-grid');
         grid.innerHTML = '';
-        
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
         document.getElementById('month-year-display').innerText = `${year} 年 ${month + 1} 月`;
@@ -417,13 +458,11 @@
 
             if (records[dateStr] && records[dateStr].length > 0) {
                 cell.classList.add('has-record');
-                // 顯示該日「最新一筆」照片
                 const latestRecord = records[dateStr][records[dateStr].length - 1];
                 if (latestRecord.img) {
                     const thumb = document.createElement('img');
                     thumb.src = latestRecord.img; thumb.className = 'thumbnail'; cell.appendChild(thumb);
                 }
-                // 加總該日「所有」花費
                 records[dateStr].forEach(r => monthlyTotal += parseInt(r.cost || 0));
             }
             grid.appendChild(cell);
@@ -436,7 +475,6 @@
     function openDayView(dateStr) {
         selectedDateStr = dateStr;
         const [y, m, d] = dateStr.split('-');
-        // 顯示為 幾年幾月幾日
         document.getElementById('selected-date-display').innerText = `${y}年${parseInt(m)}月${parseInt(d)}日`;
         
         const start = new Date(y, 0, 0);
@@ -444,12 +482,12 @@
         const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
         
         const rawQuote = appQuotes[(dayOfYear - 1) % appQuotes.length];
-        // 刪除引號，並強制在逗號處換行 (兩行顯示)
         const formattedQuote = rawQuote.replace(/["']/g, '').replace('，', '，<br>');
         document.getElementById('daily-quote').innerHTML = formattedQuote;
 
         uploadedImageBase64 = null;
         document.getElementById('cost-input').value = '';
+        document.getElementById('category-input').value = '正餐';
         renderDayRecords();
         
         document.getElementById('home-view').classList.remove('active');
@@ -464,35 +502,28 @@
         window.scrollTo(0,0);
     }
 
-    function handleImageUpload(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) { uploadedImageBase64 = e.target.result; alert("照片已暫存，請輸入金額後點擊「儲存這筆紀錄」喔！");};
-            reader.readAsDataURL(file);
-        }
-    }
-
-    // 單日支援無限多筆紀錄
     function saveRecord() {
         const costVal = document.getElementById('cost-input').value;
-        if (!uploadedImageBase64 && !costVal) return alert('請上傳照片或輸入金額喔！');
+        const categoryVal = document.getElementById('category-input').value;
         
+        if (!uploadedImageBase64 && !costVal) return alert('請上傳照片或輸入金額喔！');
         if (!records[selectedDateStr]) records[selectedDateStr] = [];
         
-        // 將新紀錄 push 到陣列尾端，不覆寫
         records[selectedDateStr].push({
             img: uploadedImageBase64 || '',
+            category: categoryVal,
             cost: parseInt(costVal) || 0
         });
 
-        localStorage.setItem('biteCalendarRecords', JSON.stringify(records));
-        
-        // 清空輸入框，準備下一筆
-        uploadedImageBase64 = null;
-        document.getElementById('cost-input').value = '';
-        
-        renderDayRecords();
+        try {
+            localStorage.setItem('biteCalendarRecords', JSON.stringify(records));
+            uploadedImageBase64 = null;
+            document.getElementById('cost-input').value = '';
+            renderDayRecords(); // 成功後立刻重繪畫面，Bug完美解決！
+        } catch(e) {
+            alert("⚠️ 儲存空間似乎滿了！請善用「備份紀錄」功能下載後，刪除部分舊資料。");
+            records[selectedDateStr].pop(); // 容量不足則退回這筆資料
+        }
     }
 
     function deleteSpecificRecord(index) {
@@ -513,22 +544,20 @@
                 wrapper.className = 'record-item';
                 
                 const delBtn = document.createElement('button');
-                delBtn.className = 'delete-record-btn';
-                delBtn.innerText = '✕';
+                delBtn.className = 'delete-record-btn'; delBtn.innerText = '✕';
                 delBtn.onclick = () => deleteSpecificRecord(index);
                 wrapper.appendChild(delBtn);
 
                 if (r.img) {
                     const img = document.createElement('img');
                     img.src = r.img; img.className = 'sticker-img';
-                    // 給予微小的隨機旋轉
                     img.style.transform = `rotate(${Math.random() * 4 - 2}deg)`;
                     wrapper.appendChild(img);
                 }
                 if (r.cost > 0) {
                     const costDiv = document.createElement('div');
                     costDiv.className = 'record-cost';
-                    costDiv.innerText = `$ ${r.cost}`;
+                    costDiv.innerText = `${r.category}\n$${r.cost}`; // 顯示分類
                     wrapper.appendChild(costDiv);
                 }
                 list.appendChild(wrapper);
@@ -536,7 +565,6 @@
         }
     }
     
-    // 生成預覽畫面引擎
     async function triggerPreview(element, hintText) {
         try {
             await new Promise(r => setTimeout(r, 300)); 
@@ -546,11 +574,11 @@
             document.getElementById('preview-modal').classList.add('show');
             element.innerHTML = ''; 
         } catch (error) {
-            alert("生成預覽時發生錯誤，請稍後再試。");
-            element.innerHTML = '';
+            alert("生成預覽時發生錯誤，請稍後再試。"); element.innerHTML = '';
         }
     }
 
+    // ★ 生成本日日曆紙 (含分類統計與巨大引號)
     async function exportDaily() {
         const container = document.getElementById('export-container');
         const quoteHtml = document.getElementById('daily-quote').innerHTML;
@@ -558,12 +586,12 @@
         
         let imagesHtml = '<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; margin-top: 60px;">';
         let totalCost = 0;
+        let catTotals = {};
         
         if(records[selectedDateStr]){
             const count = records[selectedDateStr].length;
             records[selectedDateStr].forEach((r, idx) => {
                 if(r.img) {
-                    // 動態計算寬度：1張=80%, 2或4張=45%, 3或5+張=30%
                     let itemWidth = '80%';
                     if (count === 2 || count === 4) itemWidth = '45%';
                     else if (count >= 3) itemWidth = '30%';
@@ -575,10 +603,16 @@
                             ${r.cost > 0 ? `<div style="position:absolute; bottom:15px; width:100%; text-align:center; font-size: 32px; font-weight:900; color:#4A4035; font-family:'GenJyuu', sans-serif;">$ ${r.cost}</div>` : ''}
                         </div>`;
                 }
-                totalCost += parseInt(r.cost || 0);
+                if (r.cost > 0) {
+                    totalCost += parseInt(r.cost);
+                    if (r.category) catTotals[r.category] = (catTotals[r.category] || 0) + parseInt(r.cost);
+                }
             });
         }
         imagesHtml += '</div>';
+
+        // 分類統計字串生成
+        let catStr = Object.entries(catTotals).map(([k,v]) => `${k}$${v}`).join(' ｜ ');
 
         container.innerHTML = `
             <div style="background-color: #F8F6F0; padding: 60px; font-family: 'GenJyuu', sans-serif;">
@@ -588,9 +622,9 @@
                     <h3 style="font-size: 36px; color: #B8A690; margin: 0 0 10px 0; font-weight:900; letter-spacing: 2px;">${y} 年 ${parseInt(m)} 月</h3>
                     <h2 style="font-size: 160px; color: #4A4035; margin: 0; font-weight: 900; line-height: 1;">${parseInt(d)}</h2>
                     
-                    <div style="position: relative; background: #fff; border-radius: 30px; padding: 35px 40px; font-size: 38px; color: #857A6F; font-weight: 900; line-height: 1.6; box-shadow: 0 15px 35px rgba(133, 122, 111, 0.15); border: 4px solid #E6DFD3; margin: 60px auto; width: 85%; white-space: nowrap;">
-                        <div style="position: absolute; top: -15px; left: 20px; width: 30px; height: 30px; background: #F8F6F0; border-radius: 50%;"></div>
-                        <div style="position: absolute; bottom: 20px; right: 20px; width: 15px; height: 15px; background: #F8F6F0; border-radius: 50%;"></div>
+                    <div style="position: relative; background: #fff; border-radius: 30px; padding: 45px; font-size: 38px; color: #857A6F; font-weight: 900; line-height: 1.6; box-shadow: 0 15px 35px rgba(133, 122, 111, 0.15); border: 4px solid #E6DFD3; margin: 60px auto; width: 85%; white-space: nowrap;">
+                        <div style="position: absolute; top: -15px; left: 15px; font-size: 70px; color: #E6DFD3; line-height: 1;">❝</div>
+                        <div style="position: absolute; bottom: -45px; right: 15px; font-size: 70px; color: #E6DFD3; line-height: 1;">❞</div>
                         ${quoteHtml}
                         <div style="position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); border-width: 30px 30px 0; border-style: solid; border-color: #fff transparent transparent transparent; z-index: 2;"></div>
                         <div style="position: absolute; bottom: -36px; left: 50%; transform: translateX(-50%); border-width: 36px 36px 0; border-style: solid; border-color: #E6DFD3 transparent transparent transparent; z-index: 1;"></div>
@@ -599,37 +633,51 @@
                     ${imagesHtml}
                     
                     <div style="display: flex; align-items: center; justify-content: center; font-size: 42px; font-weight: 900; color: #4A4035; margin-top: 50px;">
-                        <img src="clay_receipt.png" style="width: 70px; margin-right: 15px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));"> 本日嘴饞開銷: $ ${totalCost.toLocaleString()}
+                        <img src="clay_receipt.png" style="width: 85px; margin-right: 20px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));"> 本日嘴饞開銷: $ ${totalCost.toLocaleString()}
                     </div>
+                    ${catStr ? `<div style="margin-top: 20px; font-size: 26px; color: #857A6F; font-weight: 700;">${catStr}</div>` : ''}
                     
                     <div style="display: flex; align-items: center; justify-content: center; margin-top: 80px; padding-top: 40px; border-top: 3px dashed #E6DFD3;">
-                        <img src="icon.png" style="width: 70px; height: 70px; object-fit: contain; margin-right: 15px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));">
-                        <div style="display: flex; flex-direction: column; justify-content: center; width: 160px;">
-                            <div style="font-size: 34px; font-weight: 900; color: #4A4035; letter-spacing: 2px; text-align-last: justify;">一口日曆</div>
-                            <div style="font-size: 15px; font-weight: 900; color: #B8A690; letter-spacing: 0.5px; text-align-last: justify;">Bite a Calendar</div>
+                        <img src="icon.png" style="width: 90px; height: 90px; object-fit: contain; margin-right: 15px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));">
+                        <div style="display: flex; flex-direction: column; justify-content: center; width: 190px;">
+                            <div style="font-size: 42px; font-weight: 900; color: #4A4035; letter-spacing: 0; text-align-last: justify; line-height: 1.1;">一 口 日 曆</div>
+                            <div style="font-size: 19px; font-weight: 900; color: #B8A690; letter-spacing: 0; text-align-last: justify; line-height: 1.1;">Bite a Calendar</div>
                         </div>
                     </div>
-                    <div style="margin-top: 30px; font-size: 20px; color: #B8A690; font-weight: 700; opacity: 0.8;">© 2026 an App a Day Project.</div>
-                    <div style="margin-top: 10px; font-size: 18px; color: #B8A690; font-weight: 500; opacity: 0.6;">一口美食．一口飲料．一句溫暖｜你的專屬嘴饞充電站</div>
+                    <div style="margin-top: 30px; font-size: 18px; color: #B8A690; font-weight: 700; opacity: 0.6;">© 2026 an App a Day Project.</div>
+                    <div style="margin-top: 10px; font-size: 16px; color: #B8A690; font-weight: 500; opacity: 0.5;">一口美食．一口飲料．一句溫暖｜你的專屬嘴饞充電站</div>
                 </div>
             </div>
         `;
         await triggerPreview(container, "✨ 長按儲存本日日曆紙 ✨");
     }
 
+    // ★ 生成本月嘴饞報告 (含全部分類統計)
     async function exportMonthly() {
         const container = document.getElementById('export-container');
         const cloneGrid = document.getElementById('calendar-grid').innerHTML;
         const title = document.getElementById('month-year-display').innerText;
         const total = document.getElementById('monthly-total').innerText;
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth() + 1;
+
+        let catTotals = {};
+        for (let date in records) {
+            if (date.startsWith(`${year}-${String(month).padStart(2, '0')}`)) {
+                records[date].forEach(r => {
+                    if (r.cost > 0 && r.category) catTotals[r.category] = (catTotals[r.category] || 0) + parseInt(r.cost);
+                });
+            }
+        }
+        let catStr = Object.entries(catTotals).map(([k,v]) => `${k}$${v}`).join(' ｜ ');
 
         container.innerHTML = `
             <div style="background: #F8F6F0; padding: 80px; font-family: 'GenJyuu', sans-serif;">
-                <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
-                    <img src="icon.png" style="width: 100px; margin-right: 20px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));">
-                    <div style="display: flex; flex-direction: column; justify-content: center; width: 220px;">
-                        <h1 style="font-size: 48px; color: #4A4035; margin: 0; font-weight:900; letter-spacing: 2px; text-align-last: justify;">一口日曆</h1>
-                        <h2 style="font-size: 21px; color: #B8A690; margin: 0; font-weight:900; letter-spacing: 0.5px; text-align-last: justify;">Bite a Calendar</h2>
+                <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 25px;">
+                    <img src="icon.png" style="width: 120px; margin-right: 25px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));">
+                    <div style="display: flex; flex-direction: column; justify-content: center; width: 250px;">
+                        <h1 style="font-size: 56px; color: #4A4035; margin: 0; font-weight:900; letter-spacing: 0; text-align-last: justify; line-height: 1.1;">一 口 日 曆</h1>
+                        <h2 style="font-size: 26px; color: #B8A690; margin: 0; font-weight:900; letter-spacing: 0; text-align-last: justify; line-height: 1.1;">Bite a Calendar</h2>
                     </div>
                 </div>
                 <h2 style="text-align:center; font-size: 40px; color: #857A6F; margin-bottom: 60px;">${title} 嘴饞報告</h2>
@@ -641,12 +689,14 @@
                 </div>
 
                 <div style="display: flex; align-items: center; justify-content: center; font-size: 50px; font-weight:900; color: #B8A690; margin-top: 70px;">
-                    <img src="clay_receipt.png" style="width: 80px; margin-right: 20px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));"> 本月嘴饞開銷: $ ${total}
+                    <img src="clay_receipt.png" style="width: 100px; margin-right: 20px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));"> 本月嘴饞開銷: $ ${total}
                 </div>
-                <div style="text-align:center; margin-top: 80px; font-size: 24px; color: #857A6F; font-weight:700; opacity: 0.8;">
+                ${catStr ? `<div style="text-align: center; margin-top: 25px; font-size: 30px; color: #857A6F; font-weight: 700;">${catStr}</div>` : ''}
+
+                <div style="text-align:center; margin-top: 80px; font-size: 20px; color: #857A6F; font-weight:700; opacity: 0.6;">
                     下個月也要好好吃飯喔！<br><br>© 2026 an App a Day Project.
                 </div>
-                <div style="text-align:center; margin-top: 15px; font-size: 20px; color: #857A6F; font-weight:500; opacity: 0.6;">
+                <div style="text-align:center; margin-top: 15px; font-size: 16px; color: #857A6F; font-weight:500; opacity: 0.5;">
                     一口美食．一口飲料．一句溫暖｜你的專屬嘴饞充電站
                 </div>
             </div>
@@ -673,4 +723,3 @@
 </script>
 </body>
 </html>
-
