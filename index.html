@@ -147,7 +147,7 @@
         .quote-deco-tl { position: absolute; top: -15px; left: -15px; width: 55px; transform: rotate(-10deg); filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.1)); z-index: 5;}
         .quote-deco-br { position: absolute; bottom: -15px; right: -10px; width: 45px; transform: rotate(15deg); filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15)); z-index: 5;}
 
-        #records-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; min-height: 120px;}
+        #records-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; min-height: 120px; position: relative;}
         .record-item {
             background: #FFFFFF; border-radius: 12px; padding: 8px;
             box-shadow: inset 2px 2px 5px rgba(0,0,0,0.02), 0 4px 10px rgba(74,64,53,0.05);
@@ -159,6 +159,14 @@
             display: flex; align-items: center; justify-content: center; cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 20; padding: 0;
         }
+
+        /* 留白美學空狀態 */
+        .empty-state {
+            grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 30px 0; opacity: 0.9;
+        }
+        .empty-state img { width: 140px; filter: drop-shadow(0 8px 16px rgba(74, 64, 53, 0.15)); margin-bottom: 15px; animation: weatherFloat 4s ease-in-out infinite;}
+        .empty-state p { font-size: 16px; font-weight: 700; color: var(--text-light); margin: 0; }
 
         .upload-area { 
             border: 3px dashed var(--secondary); border-radius: 24px; padding: 20px 15px; 
@@ -277,15 +285,19 @@
             <img src="clay_heart.png" class="quote-deco-br" alt="heart">
         </div>
 
-        <div id="records-list" style="position: relative;"></div>
+        <div id="records-list"></div>
 
         <div id="stamp-tray-container" class="clay-card" style="display: none; margin-bottom: 20px; padding: 15px; background: white;">
-            <p style="margin: 0 0 10px 0; font-size: 14px; color: var(--primary); font-weight: 900; text-align: center;">✨ 拖曳印章裝飾日曆紙 ✨</p>
-            <div style="display: flex; justify-content: center; gap: 15px;">
-                <img src="stamp_free.png" onclick="addStamp('stamp_free.png')" style="width: 55px; height: 55px; object-fit: contain; cursor: pointer; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));" onerror="this.style.display='none'">
-                <img src="stamp_guilt.png" onclick="addStamp('stamp_guilt.png')" style="width: 55px; height: 55px; object-fit: contain; cursor: pointer; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));" onerror="this.style.display='none'">
-                <img src="stamp_must.png" onclick="addStamp('stamp_must.png')" style="width: 55px; height: 55px; object-fit: contain; cursor: pointer; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));" onerror="this.style.display='none'">
-                <div onclick="removeStamp()" style="width: 55px; height: 55px; border-radius: 50%; background: var(--secondary); display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; color: white; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.1));">🗑️</div>
+            <p style="margin: 0 0 10px 0; font-size: 14px; color: var(--primary); font-weight: 900; text-align: center;">✨ 點擊並拖曳印章裝飾日曆紙 ✨</p>
+            <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                <img src="stamp_free.png" onclick="addStamp('stamp_free.png')" style="width: 50px; height: 50px; object-fit: contain; cursor: pointer; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));" title="熱量豁免" onerror="this.style.display='none'">
+                <img src="stamp_guilt.png" onclick="addStamp('stamp_guilt.png')" style="width: 50px; height: 50px; object-fit: contain; cursor: pointer; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));" title="罪惡感MAX" onerror="this.style.display='none'">
+                <img src="stamp_must.png" onclick="addStamp('stamp_must.png')" style="width: 50px; height: 50px; object-fit: contain; cursor: pointer; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));" title="練完必吃" onerror="this.style.display='none'">
+                <img src="stamp_work.png" onclick="addStamp('stamp_work.png')" style="width: 50px; height: 50px; object-fit: contain; cursor: pointer; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));" title="值班續命" onerror="this.style.display='none'">
+                <img src="stamp_diet.png" onclick="addStamp('stamp_diet.png')" style="width: 50px; height: 50px; object-fit: contain; cursor: pointer; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));" title="明天再減" onerror="this.style.display='none'">
+            </div>
+            <div style="text-align: center; margin-top: 15px;">
+                <button onclick="clearStamps()" style="font-size: 13px; padding: 6px 16px; border-radius: 50px; background: transparent; border: 2px dashed var(--primary); color: var(--primary); font-weight: 700; cursor: pointer; transition: all 0.2s;">🗑️ 一鍵清空印章</button>
             </div>
         </div>
 
@@ -392,25 +404,24 @@
         'weather_thunder.png'
     ];
 
-    // 全域變數記錄印章狀態
-    let currentStamp = null; // 格式: { src: 'stamp_free.png', x: 80, y: 80 }
-    let isDraggingStamp = false;
+    // ★ 全域變數：支援多個印章
+    let currentStamps = []; // 陣列格式儲存所有印章
+    let draggingStampIndex = -1;
 
-    // 全局滑動監聽 (Swiping)
+    // ★ 全局滑動監聽 (Swiping)
     let touchstartX = 0;
     let touchstartY = 0;
     let touchendX = 0;
     let touchendY = 0;
 
     document.addEventListener('touchstart', e => {
-        // 若使用者正在拖曳印章，或是在點擊輸入框/按鈕時，禁止觸發滑動換頁
-        if (isDraggingStamp || e.target.closest('#stamp-tray-container') || e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'button') return;
+        if (draggingStampIndex !== -1 || e.target.closest('#stamp-tray-container') || e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'button') return;
         touchstartX = e.changedTouches[0].screenX;
         touchstartY = e.changedTouches[0].screenY;
     }, {passive: true});
 
     document.addEventListener('touchend', e => {
-        if (isDraggingStamp || touchstartX === 0) return;
+        if (draggingStampIndex !== -1 || touchstartX === 0) return;
         touchendX = e.changedTouches[0].screenX;
         touchendY = e.changedTouches[0].screenY;
         handleGesture();
@@ -420,7 +431,6 @@
     function handleGesture() {
         const xDiff = touchendX - touchstartX;
         const yDiff = touchendY - touchstartY;
-        // 確保是水平滑動，且滑動距離超過 60px 才觸發
         if (Math.abs(xDiff) > Math.abs(yDiff) && Math.abs(xDiff) > 60) {
             if (touchendX < touchstartX) { // 向左滑 (下一頁)
                 if (document.getElementById('home-view').classList.contains('active')) changeMonth(1);
@@ -440,7 +450,7 @@
         const y = dateObj.getFullYear();
         const m = String(dateObj.getMonth() + 1).padStart(2, '0');
         const d = String(dateObj.getDate()).padStart(2, '0');
-        currentStamp = null; // 換日清空印章
+        currentStamps = []; // 換日清空印章
         openDayView(`${y}-${m}-${d}`);
     }
 
@@ -478,7 +488,7 @@
         }, 150);
     }
 
-    // 智能時間預設種類引擎
+    // ★ 智能時間預設種類引擎
     function setSmartTimeCategory() {
         const hour = new Date().getHours();
         let cat = '正餐';
@@ -493,13 +503,16 @@
         if (catSelect) catSelect.value = cat;
     }
 
-    // 印章操作函式
+    // ★ 印章操作函式 (支援無限疊加)
     function addStamp(src) {
-        currentStamp = { src: src, x: 80, y: 80 }; // 預設放在照片牆右下角 80% 處
+        // 給予些微亂數偏移，避免印章完全重疊在一起
+        const offsetX = Math.random() * 20 - 10;
+        const offsetY = Math.random() * 20 - 10;
+        currentStamps.push({ src: src, x: 50 + offsetX, y: 50 + offsetY });
         renderDayRecords(); 
     }
-    function removeStamp() {
-        currentStamp = null;
+    function clearStamps() {
+        currentStamps = [];
         renderDayRecords();
     }
 
@@ -630,7 +643,7 @@
 
         uploadedImageBase64 = null;
         document.getElementById('cost-input').value = '';
-        currentStamp = null; // 切換日期時重置印章
+        currentStamps = []; // 切換日期時重置印章
 
         setSmartTimeCategory(); // 呼叫智能時間預設
         renderDayRecords();
@@ -680,6 +693,7 @@
         }
     }
 
+    // ★ 渲染單日紀錄 (包含空狀態與印章渲染)
     function renderDayRecords() {
         const list = document.getElementById('records-list');
         list.innerHTML = '';
@@ -712,53 +726,63 @@
                 list.appendChild(wrapper);
             });
 
-            // 渲染可拖曳的印章
-            if (currentStamp) {
-                const stampEl = document.createElement('img');
-                stampEl.src = currentStamp.src;
-                stampEl.style.position = 'absolute';
-                stampEl.style.left = currentStamp.x + '%';
-                stampEl.style.top = currentStamp.y + '%';
-                stampEl.style.width = '80px';
-                stampEl.style.transform = 'translate(-50%, -50%) rotate(-15deg)';
-                stampEl.style.zIndex = '50';
-                stampEl.style.cursor = 'grab';
-                stampEl.style.filter = 'drop-shadow(4px 8px 12px rgba(0,0,0,0.3))';
-                
-                stampEl.addEventListener('touchstart', e => {
-                    isDraggingStamp = true;
-                    stampEl.style.cursor = 'grabbing';
-                }, {passive: true});
-                
-                stampEl.addEventListener('touchmove', e => {
-                    if (!isDraggingStamp) return;
-                    e.preventDefault(); // 防止滾動螢幕
-                    const rect = list.getBoundingClientRect();
-                    const touch = e.touches[0];
-                    let x = touch.clientX - rect.left;
-                    let y = touch.clientY - rect.top;
-                    
-                    let px = (x / rect.width) * 100;
-                    let py = (y / rect.height) * 100;
-                    px = Math.max(0, Math.min(100, px));
-                    py = Math.max(0, Math.min(100, py));
-                    
-                    currentStamp.x = px;
-                    currentStamp.y = py;
-                    stampEl.style.left = px + '%';
-                    stampEl.style.top = py + '%';
-                }, {passive: false});
-                
-                stampEl.addEventListener('touchend', e => {
-                    isDraggingStamp = false;
+            // 渲染可拖曳的印章陣列
+            if (currentStamps && currentStamps.length > 0) {
+                currentStamps.forEach((stamp, idx) => {
+                    const stampEl = document.createElement('img');
+                    stampEl.src = stamp.src;
+                    stampEl.style.position = 'absolute';
+                    stampEl.style.left = stamp.x + '%';
+                    stampEl.style.top = stamp.y + '%';
+                    stampEl.style.width = '80px';
+                    stampEl.style.transform = 'translate(-50%, -50%) rotate(-15deg)';
+                    stampEl.style.zIndex = '50';
                     stampEl.style.cursor = 'grab';
+                    stampEl.style.filter = 'drop-shadow(4px 8px 12px rgba(0,0,0,0.3))';
+                    
+                    stampEl.addEventListener('touchstart', e => {
+                        draggingStampIndex = idx;
+                        stampEl.style.cursor = 'grabbing';
+                        stampEl.style.zIndex = '60'; // 拖曳時顯示在最上層
+                    }, {passive: true});
+                    
+                    stampEl.addEventListener('touchmove', e => {
+                        if (draggingStampIndex !== idx) return;
+                        e.preventDefault(); 
+                        const rect = list.getBoundingClientRect();
+                        const touch = e.touches[0];
+                        let x = touch.clientX - rect.left;
+                        let y = touch.clientY - rect.top;
+                        
+                        let px = (x / rect.width) * 100;
+                        let py = (y / rect.height) * 100;
+                        px = Math.max(0, Math.min(100, px));
+                        py = Math.max(0, Math.min(100, py));
+                        
+                        currentStamps[idx].x = px;
+                        currentStamps[idx].y = py;
+                        stampEl.style.left = px + '%';
+                        stampEl.style.top = py + '%';
+                    }, {passive: false});
+                    
+                    stampEl.addEventListener('touchend', e => {
+                        draggingStampIndex = -1;
+                        stampEl.style.cursor = 'grab';
+                        stampEl.style.zIndex = '50';
+                    });
+                    
+                    list.appendChild(stampEl);
                 });
-                
-                list.appendChild(stampEl);
             }
         } else {
-            // 沒有紀錄時隱藏印章工具列
+            // 沒有紀錄時隱藏印章工具列，並顯示空狀態胃袋美學
             document.getElementById('stamp-tray-container').style.display = 'none';
+            list.innerHTML = `
+                <div class="empty-state">
+                    <img src="clay_stomach.png" alt="sleeping stomach" onerror="this.style.display='none'">
+                    <p>未來的熱量正在趕來的路上...</p>
+                </div>
+            `;
         }
     }
     
@@ -808,10 +832,12 @@
             });
         }
         
-        // 匯出圖套用印章
+        // ★ 匯出圖套用無限疊加的印章陣列
         let stampHtmlStr = '';
-        if (currentStamp && records[selectedDateStr] && records[selectedDateStr].length > 0) {
-            stampHtmlStr = `<img src="${currentStamp.src}" style="position: absolute; left: ${currentStamp.x}%; top: ${currentStamp.y}%; width: 140px; transform: translate(-50%, -50%) rotate(-15deg); z-index: 50; filter: drop-shadow(4px 10px 15px rgba(0,0,0,0.3));" onerror="this.style.display='none'">`;
+        if (currentStamps && currentStamps.length > 0 && records[selectedDateStr] && records[selectedDateStr].length > 0) {
+            currentStamps.forEach(stamp => {
+                stampHtmlStr += `<img src="${stamp.src}" style="position: absolute; left: ${stamp.x}%; top: ${stamp.y}%; width: 140px; transform: translate(-50%, -50%) rotate(-15deg); z-index: 50; filter: drop-shadow(4px 10px 15px rgba(0,0,0,0.3));" onerror="this.style.display='none'">`;
+            });
         }
 
         let imagesHtml = `
@@ -854,7 +880,7 @@
                     ${catStr ? `<div style="margin-top: 25px; font-size: 26px; color: #857A6F; font-weight: 700;">${catStr}</div>` : ''}
                     
                     <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-top: 80px; padding-top: 40px; border-top: 3px dashed #E6DFD3;">
-                        <img src="icon.png" style="width: 100px; height: 100px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));" crossorigin="anonymous" onerror="this.style.display='none'">
+                        <img src="icon.png" style="width: 100px; height: 100px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));" crossorigin="anonymous">
                         <div style="display: flex; flex-direction: column; justify-content: center; align-items: flex-start; width: 175px;">
                             <div style="font-size: 40px; font-weight: 900; color: #4A4035; letter-spacing: 2px; text-align: left; width: 100%; white-space: nowrap; line-height: 1.1;">一口日曆</div>
                             <div style="font-size: 18px; font-weight: 900; color: #B8A690; letter-spacing: 0.5px; text-align: left; width: 100%; white-space: nowrap; line-height: 1.2; margin-top: 4px;">Bite a Calendar</div>
