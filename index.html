@@ -46,7 +46,7 @@
             display: flex; flex-direction: column; position: relative;
         }
 
-        /* --- 3. 標題區 (修復為最穩定的等寬置中、強迫不換行) --- */
+        /* --- 3. 標題區 (恢復靠左對齊，整體水平置中) --- */
         .header-wrapper { 
             display: flex; align-items: center; justify-content: center; gap: 12px;
             margin-bottom: 25px; width: 100%;
@@ -56,22 +56,21 @@
             filter: drop-shadow(2px 4px 6px rgba(74, 64, 53, 0.15)); 
         }
         .header-title-box {
-            display: flex; flex-direction: column; justify-content: center; align-items: flex-start; 
-            width: 140px; /* 固定寬度強制等寬 */
+            display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
         }
         .header-title-box h1 { 
-            margin: 0; font-size: 32px; font-weight: 900; color: var(--text-dark); 
-            line-height: 1.1; letter-spacing: 2px; text-align-last: justify; width: 100%; white-space: nowrap;
+            margin: 0; font-size: 36px; font-weight: 900; color: var(--text-dark); 
+            line-height: 1.1; letter-spacing: 2px; text-align: left; white-space: nowrap;
         }
         .header-title-box h2 { 
-            margin: 0; font-size: 13px; font-weight: 900; color: var(--primary); 
-            line-height: 1.2; letter-spacing: 0.5px; text-align-last: justify; width: 100%; white-space: nowrap; margin-top: 2px;
+            margin: 0; font-size: 16px; font-weight: 900; color: var(--primary); 
+            line-height: 1.2; letter-spacing: 0.5px; text-align: left; white-space: nowrap; margin-top: 2px;
         }
 
         /* --- 4. 黏土風卡片與按鈕 --- */
         .clay-card {
             background: var(--bg-color); border-radius: 28px; padding: 25px 20px;
-            box-shadow: var(--clay-shadow); position: relative; margin-bottom: 25px;
+            box-shadow: var(--clay-shadow); position: relative; margin-bottom: 20px; /* 縮小垂直間距 */
         }
         .clay-card::before {
             content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
@@ -128,16 +127,28 @@
             font-size: 18px; font-weight: 900; color: var(--text-dark); letter-spacing: 1px; margin: 0;
         }
         
+        /* 天氣動畫設定 */
+        @keyframes weatherFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        .weather-icon-anim {
+            width: 45px; height: 45px; cursor: pointer;
+            filter: drop-shadow(2px 4px 6px rgba(74, 64, 53, 0.15));
+            animation: weatherFloat 3s ease-in-out infinite;
+            transition: opacity 0.2s;
+        }
+
         .quote-box {
-            background: white; padding: 25px 20px; border-radius: 20px; margin-bottom: 25px; 
+            background: white; padding: 25px 20px; border-radius: 20px; margin-bottom: 15px; /* 縮小垂直間距 */
             font-weight: 900; text-align: center; color: var(--text-dark); font-size: 16px;
             box-shadow: var(--clay-shadow); position: relative; line-height: 1.6;
         }
-        .quote-deco-tl { position: absolute; top: -15px; left: -15px; width: 45px; transform: rotate(-10deg); filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.1)); z-index: 5;}
+        .quote-deco-tl { position: absolute; top: -15px; left: -15px; width: 55px; transform: rotate(-10deg); filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.1)); z-index: 5;}
         .quote-deco-br { position: absolute; bottom: -15px; right: -10px; width: 45px; transform: rotate(15deg); filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15)); z-index: 5;}
 
         /* 多筆紀錄排版 (一排三格) */
-        #records-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        #records-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; } /* 縮小垂直間距 */
         .record-item {
             background: #FFFFFF; border-radius: 12px; padding: 8px;
             box-shadow: inset 2px 2px 5px rgba(0,0,0,0.02), 0 4px 10px rgba(74,64,53,0.05);
@@ -249,21 +260,21 @@
 
     <div id="day-view" class="view">
         <div class="header-wrapper" style="margin-bottom: 10px;">
-            <img src="icon.png" alt="icon" class="header-icon-left" style="width: 65px; height: 65px;">
-            <div class="header-title-box" style="width: 130px;">
-                <h1 style="font-size: 28px;">一口日曆</h1>
-                <h2 style="font-size: 12px;">Bite a Calendar</h2>
+            <img src="icon.png" alt="icon" class="header-icon-left" style="width: 60px; height: 60px;">
+            <div class="header-title-box">
+                <h1 style="font-size: 30px;">一口日曆</h1>
+                <h2 style="font-size: 14px;">Bite a Calendar</h2>
             </div>
         </div>
 
-        <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 20px; margin-top: 10px;">
+        <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 15px; margin-top: 5px;">
             <div class="calendar-date-badge" id="selected-date-display">2026年3月15日</div>
             <div class="calendar-date-badge" id="selected-weekday-display" style="padding: 8px 12px; font-size: 16px;">星期四</div>
-            <img id="weather-icon" src="weather_sun.png" style="width: 45px; height: 45px; cursor: pointer; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.1)); transition: transform 0.2s;" onclick="toggleWeather()" onerror="this.src='clay_header_icon.png'">
+            <img id="weather-icon" class="weather-icon-anim" src="weather_sun.png" onclick="toggleWeather()" onerror="this.src='clay_header_icon.png'">
         </div>
 
         <div class="quote-box">
-            <img src="clay_megaphone.png" class="quote-deco-tl" alt="megaphone" style="width: 50px;">
+            <img src="clay_megaphone.png" class="quote-deco-tl" alt="megaphone">
             <span id="daily-quote">加載中...</span>
             <img src="clay_heart.png" class="quote-deco-br" alt="heart">
         </div>
@@ -401,10 +412,10 @@
         dailyWeather[selectedDateStr] = wIdx;
         localStorage.setItem('biteCalendarWeather', JSON.stringify(dailyWeather));
         const iconEl = document.getElementById('weather-icon');
-        iconEl.style.transform = 'scale(0.8)';
+        iconEl.style.opacity = 0.5;
         setTimeout(() => { 
             iconEl.src = weatherIcons[wIdx]; 
-            iconEl.style.transform = 'scale(1)';
+            iconEl.style.opacity = 1;
         }, 150);
     }
 
@@ -442,7 +453,6 @@
 
     function exportBackup() {
         if (Object.keys(records).length === 0) return alert("目前還沒有任何紀錄可以備份喔！");
-        // 備份時把天氣資料也塞進去
         const backupData = { records: records, weather: dailyWeather };
         const a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob([JSON.stringify(backupData)], { type: "application/json" }));
@@ -458,7 +468,6 @@
             try {
                 const importedData = JSON.parse(e.target.result);
                 if (confirm("匯入備份將會與目前的紀錄合併。確定要匯入嗎？")) {
-                    // 兼容舊版備份檔與新版(含天氣)的備份檔
                     if (importedData.records) {
                         records = { ...records, ...importedData.records };
                         if (importedData.weather) dailyWeather = { ...dailyWeather, ...importedData.weather };
@@ -519,12 +528,10 @@
         const [y, m, d] = dateStr.split('-');
         document.getElementById('selected-date-display').innerText = `${y}年${parseInt(m)}月${parseInt(d)}日`;
         
-        // 解析星期幾
         const dateObj = new Date(dateStr);
         const weekdaysArr = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
         document.getElementById('selected-weekday-display').innerText = weekdaysArr[dateObj.getDay()];
 
-        // 載入天氣
         let wIdx = dailyWeather[dateStr] || 0;
         document.getElementById('weather-icon').src = weatherIcons[wIdx];
         
@@ -629,17 +636,11 @@
         }
     }
 
-    // ★ 生成本日日曆紙 (修復白框與排版)
+    // ★ 生成本日日曆紙 (白相框完美渲染)
     async function exportDaily() {
         const container = document.getElementById('export-container');
         const quoteHtml = document.getElementById('daily-quote').innerHTML;
         const [y, m, d] = selectedDateStr.split('-');
-        
-        const dateObj = new Date(selectedDateStr);
-        const weekdaysArr = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-        const weekdayStr = weekdaysArr[dateObj.getDay()];
-        const wIdx = dailyWeather[selectedDateStr] || 0;
-        const wImg = weatherIcons[wIdx];
 
         let imagesHtml = '<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; margin-top: 60px;">';
         let totalCost = 0;
@@ -654,15 +655,11 @@
                     else if (count >= 3) itemWidth = '30%';
 
                     const rotation = (idx % 2 === 0 ? 1 : -1) * (Math.random() * 3 + 1);
-                    // 完全強制填滿白色的相框結構
+                    // 確保白框在匯出時完美顯示
                     imagesHtml += `
-                        <div style="width: ${itemWidth}; position:relative; margin-bottom: 30px; transform: rotate(${rotation}deg);">
-                            <div style="background-color: #FFFFFF !important; padding: 15px 15px 60px 15px; border-radius: 12px; box-shadow: 0 10px 25px rgba(74, 64, 53, 0.15); border: 1px solid #E6DFD3; box-sizing: border-box; display: inline-block; width: 100%;">
-                                <div style="width: 100%; aspect-ratio: 1; overflow: hidden; border-radius: 4px; background-color: #FFFFFF;">
-                                    <img src="${r.img}" style="width: 100%; height: 100%; object-fit: cover; display: block; margin: 0; padding: 0;">
-                                </div>
-                            </div>
-                            ${r.cost > 0 ? `<div style="position:absolute; bottom:15px; width:100%; text-align:center; font-size: 32px; font-weight:900; color:#4A4035; font-family:'GenJyuu', sans-serif; z-index: 10;">$ ${r.cost}</div>` : ''}
+                        <div style="width: ${itemWidth}; position:relative; margin-bottom: 30px; background-color: #FFFFFF; padding: 15px 15px 65px 15px; border-radius: 12px; box-shadow: 0 10px 25px rgba(74, 64, 53, 0.15); border: 1px solid #E6DFD3; box-sizing: border-box; display: inline-block; transform: rotate(${rotation}deg);">
+                            <img src="${r.img}" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 4px; display: block; margin: 0 auto;">
+                            ${r.cost > 0 ? `<div style="position:absolute; bottom:18px; left:0; width:100%; text-align:center; font-size: 32px; font-weight:900; color:#4A4035; font-family:'GenJyuu', sans-serif;">$ ${r.cost}</div>` : ''}
                         </div>`;
                 }
                 if (r.cost > 0) {
@@ -685,12 +682,7 @@
                 <div style="background: white; padding: 80px 60px; border-radius: 40px; box-shadow: 10px 10px 40px rgba(74, 64, 53, 0.06); text-align: center; position:relative; overflow:hidden;">
                     <div style="position:absolute; top:20px; left:20px; right:20px; bottom:20px; border: 4px dashed #E6DFD3; border-radius: 30px; pointer-events:none;"></div>
                     
-                    <div style="display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 10px;">
-                        <h3 style="font-size: 42px; color: #B8A690; margin: 0; font-weight:900; letter-spacing: 2px;">${y} 年 ${parseInt(m)} 月</h3>
-                        <div style="background: #E6DFD3; color: #857A6F; padding: 10px 24px; border-radius: 12px; font-size: 28px; font-weight: 900;">${weekdayStr}</div>
-                        <img src="${wImg}" style="width: 70px; height: 70px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));" onerror="this.style.display='none'">
-                    </div>
-                    
+                    <h3 style="font-size: 42px; color: #B8A690; margin: 0 0 10px 0; font-weight:900; letter-spacing: 2px;">${y} 年 ${parseInt(m)} 月</h3>
                     <h2 style="font-size: 160px; color: #4A4035; margin: 0; font-weight: 900; line-height: 1;">${parseInt(d)}</h2>
                     
                     <div style="position: relative; background: #fff; border-radius: 30px; padding: 45px; font-size: 38px; color: #857A6F; font-weight: 900; line-height: 1.6; box-shadow: 0 15px 35px rgba(133, 122, 111, 0.15); border: 4px solid #E6DFD3; margin: 60px auto; width: 85%; white-space: nowrap;">
@@ -709,10 +701,10 @@
                     ${catStr ? `<div style="margin-top: 25px; font-size: 26px; color: #857A6F; font-weight: 700;">${catStr}</div>` : ''}
                     
                     <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-top: 80px; padding-top: 40px; border-top: 3px dashed #E6DFD3;">
-                        <img src="icon.png" style="width: 100px; height: 100px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));" onerror="this.style.display='none'">
-                        <div style="display: flex; flex-direction: column; justify-content: center; align-items: flex-start; width: 175px;">
-                            <div style="font-size: 40px; font-weight: 900; color: #4A4035; letter-spacing: 2px; text-align-last: justify; width: 100%; white-space: nowrap; line-height: 1.1;">一口日曆</div>
-                            <div style="font-size: 18px; font-weight: 900; color: #B8A690; letter-spacing: 0.5px; text-align-last: justify; width: 100%; white-space: nowrap; line-height: 1.2; margin-top: 4px;">Bite a Calendar</div>
+                        <img src="icon.png" style="width: 90px; height: 90px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));" crossorigin="anonymous">
+                        <div style="display: flex; flex-direction: column; justify-content: center; align-items: flex-start;">
+                            <div style="font-size: 40px; font-weight: 900; color: #4A4035; letter-spacing: 2px; line-height: 1.1;">一口日曆</div>
+                            <div style="font-size: 18px; font-weight: 900; color: #B8A690; letter-spacing: 0.5px; line-height: 1.2; margin-top: 4px;">Bite a Calendar</div>
                         </div>
                     </div>
                     <div style="margin-top: 35px; font-size: 18px; color: #B8A690; font-weight: 700; opacity: 0.6;">© 2026 an App a Day Project.</div>
@@ -751,11 +743,11 @@
         container.innerHTML = `
             <div style="background: #F8F6F0; padding: 80px; font-family: 'GenJyuu', sans-serif; position: relative;">
                 
-                <div style="display: flex; align-items: center; justify-content: center; gap: 25px; margin-bottom: 30px; position: relative; z-index: 10;">
-                    <img src="icon.png" style="width: 180px; height: 180px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15));">
-                    <div style="display: flex; flex-direction: column; justify-content: center; align-items: flex-start; width: 330px;">
-                        <h1 style="font-size: 76px; color: #4A4035; margin: 0; font-weight:900; letter-spacing: 2px; text-align-last: justify; width: 100%; white-space: nowrap; line-height: 1.1;">一口日曆</h1>
-                        <h2 style="font-size: 34px; color: #B8A690; margin: 0; font-weight:900; letter-spacing: 0.5px; text-align-last: justify; width: 100%; white-space: nowrap; line-height: 1.2; margin-top: 6px;">Bite a Calendar</h2>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 30px; position: relative; z-index: 10;">
+                    <img src="icon.png" style="width: 150px; height: 150px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15));" crossorigin="anonymous">
+                    <div style="display: flex; flex-direction: column; justify-content: center; align-items: flex-start;">
+                        <h1 style="font-size: 72px; color: #4A4035; margin: 0; font-weight:900; letter-spacing: 2px; line-height: 1.1;">一口日曆</h1>
+                        <h2 style="font-size: 32px; color: #B8A690; margin: 0; font-weight:900; letter-spacing: 0.5px; line-height: 1.2; margin-top: 6px;">Bite a Calendar</h2>
                     </div>
                 </div>
                 <h2 style="text-align:center; font-size: 46px; color: #857A6F; margin-bottom: 60px; position: relative; z-index: 10;">${title} 嘴饞報告</h2>
