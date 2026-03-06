@@ -160,7 +160,6 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 20; padding: 0;
         }
 
-        /* 留白美學空狀態 */
         .empty-state {
             grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center;
             padding: 30px 0; opacity: 0.9;
@@ -305,8 +304,8 @@
             <div class="upload-area" onclick="document.getElementById('file-input').click()">
                 <img src="clay_camera.png" style="width: 50px; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.1));">
                 <div style="text-align: left;">
-                    <p style="margin:0; font-size:16px; font-weight:900; color:var(--text-dark);">點擊上傳今日美食/飲料</p>
-                    <p style="margin:0; font-size:12px; color:var(--text-light); font-weight:500;">(自動套用可愛拍立得白框！)</p>
+                    <p id="upload-main-text" style="margin:0; font-size:16px; font-weight:900; color:var(--text-dark);">點擊上傳今日美食/飲料</p>
+                    <p id="upload-sub-text" style="margin:0; font-size:12px; color:var(--text-light); font-weight:500;">(自動套用可愛拍立得白框！)</p>
                 </div>
                 <input type="file" id="file-input" accept="image/*" onchange="handleImageUpload(event)">
             </div>
@@ -404,11 +403,9 @@
         'weather_thunder.png'
     ];
 
-    // ★ 全域變數：支援多個印章
-    let currentStamps = []; // 陣列格式儲存所有印章
+    let currentStamps = []; 
     let draggingStampIndex = -1;
 
-    // ★ 全局滑動監聽 (Swiping)
     let touchstartX = 0;
     let touchstartY = 0;
     let touchendX = 0;
@@ -432,11 +429,11 @@
         const xDiff = touchendX - touchstartX;
         const yDiff = touchendY - touchstartY;
         if (Math.abs(xDiff) > Math.abs(yDiff) && Math.abs(xDiff) > 60) {
-            if (touchendX < touchstartX) { // 向左滑 (下一頁)
+            if (touchendX < touchstartX) { 
                 if (document.getElementById('home-view').classList.contains('active')) changeMonth(1);
                 else if (document.getElementById('day-view').classList.contains('active')) changeDay(1);
             }
-            if (touchendX > touchstartX) { // 向右滑 (上一頁)
+            if (touchendX > touchstartX) { 
                 if (document.getElementById('home-view').classList.contains('active')) changeMonth(-1);
                 else if (document.getElementById('day-view').classList.contains('active')) changeDay(-1);
             }
@@ -450,7 +447,7 @@
         const y = dateObj.getFullYear();
         const m = String(dateObj.getMonth() + 1).padStart(2, '0');
         const d = String(dateObj.getDate()).padStart(2, '0');
-        currentStamps = []; // 換日清空印章
+        currentStamps = []; 
         openDayView(`${y}-${m}-${d}`);
     }
 
@@ -488,7 +485,6 @@
         }, 150);
     }
 
-    // ★ 智能時間預設種類引擎
     function setSmartTimeCategory() {
         const hour = new Date().getHours();
         let cat = '正餐';
@@ -503,9 +499,7 @@
         if (catSelect) catSelect.value = cat;
     }
 
-    // ★ 印章操作函式 (支援無限疊加)
     function addStamp(src) {
-        // 給予些微亂數偏移，避免印章完全重疊在一起
         const offsetX = Math.random() * 20 - 10;
         const offsetY = Math.random() * 20 - 10;
         currentStamps.push({ src: src, x: 50 + offsetX, y: 50 + offsetY });
@@ -532,6 +526,15 @@
         });
     }
 
+    // 重置上傳區塊的文字狀態
+    function resetUploadUI() {
+        const mainText = document.getElementById('upload-main-text');
+        const subText = document.getElementById('upload-sub-text');
+        if(mainText) mainText.innerText = "點擊上傳今日美食/飲料";
+        if(subText) subText.innerText = "(自動套用可愛拍立得白框！)";
+        document.getElementById('file-input').value = '';
+    }
+
     function handleImageUpload(event) {
         const file = event.target.files[0];
         if (file) {
@@ -539,7 +542,9 @@
             reader.onload = async function(e) { 
                 try {
                     uploadedImageBase64 = await compressImage(e.target.result); 
-                    alert("照片已暫存準備好！\n請先確認種類、輸入金額後再點擊「儲存這筆紀錄」喔！");
+                    // 上傳成功後，動態變更按鈕文字取代原本的 Alert 彈出視窗
+                    document.getElementById('upload-main-text').innerText = "照片已準備好上傳！";
+                    document.getElementById('upload-sub-text').innerText = "接著確認種類、輸入金額後，再儲存這筆紀錄 ✨";
                 } catch(err) {
                     alert("照片處理失敗，請重試！");
                 }
@@ -643,9 +648,10 @@
 
         uploadedImageBase64 = null;
         document.getElementById('cost-input').value = '';
-        currentStamps = []; // 切換日期時重置印章
+        currentStamps = []; 
 
-        setSmartTimeCategory(); // 呼叫智能時間預設
+        resetUploadUI(); // 切換日期時重置上傳按鈕狀態
+        setSmartTimeCategory(); 
         renderDayRecords();
         
         document.getElementById('home-view').classList.remove('active');
@@ -677,6 +683,7 @@
             localStorage.setItem('biteCalendarRecords', JSON.stringify(records));
             uploadedImageBase64 = null;
             document.getElementById('cost-input').value = '';
+            resetUploadUI(); // 儲存成功後重置上傳按鈕狀態
             renderDayRecords(); 
         } catch(e) {
             alert("⚠️ 儲存空間似乎滿了！請善用「備份紀錄」功能下載後，刪除部分舊資料。");
@@ -693,13 +700,11 @@
         }
     }
 
-    // ★ 渲染單日紀錄 (包含空狀態與印章渲染)
     function renderDayRecords() {
         const list = document.getElementById('records-list');
         list.innerHTML = '';
         
         if(records[selectedDateStr] && records[selectedDateStr].length > 0){
-            // 顯示印章工具列
             document.getElementById('stamp-tray-container').style.display = 'block';
 
             records[selectedDateStr].forEach((r, index) => {
@@ -726,7 +731,6 @@
                 list.appendChild(wrapper);
             });
 
-            // 渲染可拖曳的印章陣列
             if (currentStamps && currentStamps.length > 0) {
                 currentStamps.forEach((stamp, idx) => {
                     const stampEl = document.createElement('img');
@@ -743,7 +747,7 @@
                     stampEl.addEventListener('touchstart', e => {
                         draggingStampIndex = idx;
                         stampEl.style.cursor = 'grabbing';
-                        stampEl.style.zIndex = '60'; // 拖曳時顯示在最上層
+                        stampEl.style.zIndex = '60'; 
                     }, {passive: true});
                     
                     stampEl.addEventListener('touchmove', e => {
@@ -775,7 +779,6 @@
                 });
             }
         } else {
-            // 沒有紀錄時隱藏印章工具列，並顯示空狀態胃袋美學
             document.getElementById('stamp-tray-container').style.display = 'none';
             list.innerHTML = `
                 <div class="empty-state">
@@ -832,7 +835,6 @@
             });
         }
         
-        // ★ 匯出圖套用無限疊加的印章陣列
         let stampHtmlStr = '';
         if (currentStamps && currentStamps.length > 0 && records[selectedDateStr] && records[selectedDateStr].length > 0) {
             currentStamps.forEach(stamp => {
@@ -880,7 +882,7 @@
                     ${catStr ? `<div style="margin-top: 25px; font-size: 26px; color: #857A6F; font-weight: 700;">${catStr}</div>` : ''}
                     
                     <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-top: 80px; padding-top: 40px; border-top: 3px dashed #E6DFD3;">
-                        <img src="icon.png" style="width: 100px; height: 100px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));" crossorigin="anonymous">
+                        <img src="icon.png" style="width: 100px; height: 100px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));" crossorigin="anonymous" onerror="this.style.display='none'">
                         <div style="display: flex; flex-direction: column; justify-content: center; align-items: flex-start; width: 175px;">
                             <div style="font-size: 40px; font-weight: 900; color: #4A4035; letter-spacing: 2px; text-align: left; width: 100%; white-space: nowrap; line-height: 1.1;">一口日曆</div>
                             <div style="font-size: 18px; font-weight: 900; color: #B8A690; letter-spacing: 0.5px; text-align: left; width: 100%; white-space: nowrap; line-height: 1.2; margin-top: 4px;">Bite a Calendar</div>
