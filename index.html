@@ -544,7 +544,7 @@
                     uploadedImageBase64 = await compressImage(e.target.result); 
                     // 上傳成功後，動態變更按鈕文字取代原本的 Alert 彈出視窗
                     document.getElementById('upload-main-text').innerText = "照片已準備好上傳！";
-                    document.getElementById('upload-sub-text').innerText = "接著確認種類、輸入金額後，再儲存這筆紀錄 ✨";
+                    document.getElementById('upload-sub-text').innerText = "確認種類、輸入金額後，再儲存紀錄 ✨";
                 } catch(err) {
                     alert("照片處理失敗，請重試！");
                 }
@@ -973,3 +973,4 @@
 </script>
 </body>
 </html>
+
