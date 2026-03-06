@@ -47,7 +47,7 @@
             display: flex; flex-direction: column; position: relative;
         }
 
-        /* --- 3. 標題區 (恢復上一版：靠左對齊，整體水平置中) --- */
+        /* --- 3. 標題區 --- */
         .header-wrapper { 
             display: flex; align-items: center; justify-content: center; gap: 12px;
             margin-bottom: 25px; width: 100%;
@@ -128,7 +128,6 @@
             font-size: 18px; font-weight: 900; color: var(--text-dark); letter-spacing: 1px; margin: 0;
         }
         
-        /* 天氣動畫設定：加入陰影與上下漂浮 */
         @keyframes weatherFloat {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-5px); }
@@ -148,7 +147,7 @@
         .quote-deco-tl { position: absolute; top: -15px; left: -15px; width: 55px; transform: rotate(-10deg); filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.1)); z-index: 5;}
         .quote-deco-br { position: absolute; bottom: -15px; right: -10px; width: 45px; transform: rotate(15deg); filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15)); z-index: 5;}
 
-        #records-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+        #records-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; min-height: 120px;}
         .record-item {
             background: #FFFFFF; border-radius: 12px; padding: 8px;
             box-shadow: inset 2px 2px 5px rgba(0,0,0,0.02), 0 4px 10px rgba(74,64,53,0.05);
@@ -178,7 +177,6 @@
             font-size: 18px; background: var(--bg-color); color: var(--text-dark); font-weight: 700; outline: none; appearance: none;
         }
 
-        /* 將拍立得邊框替換為米白色 */
         .sticker-img { 
             width: 100%; aspect-ratio: 1; margin: 0 auto 10px auto; display: block;
             border: 6px solid var(--polaroid-paper); border-bottom-width: 20px; border-radius: 6px; 
@@ -220,7 +218,6 @@
         }
         .checkbox-label input { width: 18px; height: 18px; margin-right: 8px; accent-color: var(--primary); }
 
-        /* --- 10. 隱藏的截圖專用區 --- */
         #export-container { position: absolute; top: -9999px; left: -9999px; width: 1080px; background: var(--bg-color); padding: 0; }
     </style>
 </head>
@@ -275,12 +272,22 @@
         </div>
 
         <div class="quote-box">
-            <img src="clay_megaphone.png" class="quote-deco-tl" alt="megaphone">
+            <img src="clay_megaphone.png" class="quote-deco-tl" alt="megaphone" onerror="this.style.display='none'">
             <span id="daily-quote">加載中...</span>
             <img src="clay_heart.png" class="quote-deco-br" alt="heart">
         </div>
 
-        <div id="records-list"></div>
+        <div id="records-list" style="position: relative;"></div>
+
+        <div id="stamp-tray-container" class="clay-card" style="display: none; margin-bottom: 20px; padding: 15px; background: white;">
+            <p style="margin: 0 0 10px 0; font-size: 14px; color: var(--primary); font-weight: 900; text-align: center;">✨ 拖曳印章裝飾日曆紙 ✨</p>
+            <div style="display: flex; justify-content: center; gap: 15px;">
+                <img src="stamp_free.png" onclick="addStamp('stamp_free.png')" style="width: 55px; height: 55px; object-fit: contain; cursor: pointer; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));" onerror="this.style.display='none'">
+                <img src="stamp_guilt.png" onclick="addStamp('stamp_guilt.png')" style="width: 55px; height: 55px; object-fit: contain; cursor: pointer; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));" onerror="this.style.display='none'">
+                <img src="stamp_must.png" onclick="addStamp('stamp_must.png')" style="width: 55px; height: 55px; object-fit: contain; cursor: pointer; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));" onerror="this.style.display='none'">
+                <div onclick="removeStamp()" style="width: 55px; height: 55px; border-radius: 50%; background: var(--secondary); display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; color: white; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.1));">🗑️</div>
+            </div>
+        </div>
 
         <div class="clay-card" style="margin-bottom: 20px;">
             <div class="upload-area" onclick="document.getElementById('file-input').click()">
@@ -385,6 +392,58 @@
         'weather_thunder.png'
     ];
 
+    // 全域變數記錄印章狀態
+    let currentStamp = null; // 格式: { src: 'stamp_free.png', x: 80, y: 80 }
+    let isDraggingStamp = false;
+
+    // 全局滑動監聽 (Swiping)
+    let touchstartX = 0;
+    let touchstartY = 0;
+    let touchendX = 0;
+    let touchendY = 0;
+
+    document.addEventListener('touchstart', e => {
+        // 若使用者正在拖曳印章，或是在點擊輸入框/按鈕時，禁止觸發滑動換頁
+        if (isDraggingStamp || e.target.closest('#stamp-tray-container') || e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'button') return;
+        touchstartX = e.changedTouches[0].screenX;
+        touchstartY = e.changedTouches[0].screenY;
+    }, {passive: true});
+
+    document.addEventListener('touchend', e => {
+        if (isDraggingStamp || touchstartX === 0) return;
+        touchendX = e.changedTouches[0].screenX;
+        touchendY = e.changedTouches[0].screenY;
+        handleGesture();
+        touchstartX = 0; touchstartY = 0; touchendX = 0; touchendY = 0;
+    }, {passive: true});
+
+    function handleGesture() {
+        const xDiff = touchendX - touchstartX;
+        const yDiff = touchendY - touchstartY;
+        // 確保是水平滑動，且滑動距離超過 60px 才觸發
+        if (Math.abs(xDiff) > Math.abs(yDiff) && Math.abs(xDiff) > 60) {
+            if (touchendX < touchstartX) { // 向左滑 (下一頁)
+                if (document.getElementById('home-view').classList.contains('active')) changeMonth(1);
+                else if (document.getElementById('day-view').classList.contains('active')) changeDay(1);
+            }
+            if (touchendX > touchstartX) { // 向右滑 (上一頁)
+                if (document.getElementById('home-view').classList.contains('active')) changeMonth(-1);
+                else if (document.getElementById('day-view').classList.contains('active')) changeDay(-1);
+            }
+        }
+    }
+
+    function changeDay(offset) {
+        if (!selectedDateStr) return;
+        const dateObj = new Date(selectedDateStr);
+        dateObj.setDate(dateObj.getDate() + offset);
+        const y = dateObj.getFullYear();
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const d = String(dateObj.getDate()).padStart(2, '0');
+        currentStamp = null; // 換日清空印章
+        openDayView(`${y}-${m}-${d}`);
+    }
+
     function init() { 
         renderCalendar(); 
         checkWarningModal(); 
@@ -419,6 +478,31 @@
         }, 150);
     }
 
+    // 智能時間預設種類引擎
+    function setSmartTimeCategory() {
+        const hour = new Date().getHours();
+        let cat = '正餐';
+        if (hour >= 7 && hour < 12) cat = '咖啡';
+        else if (hour >= 12 && hour < 14) cat = '正餐';
+        else if (hour >= 14 && hour < 17) cat = '飲料';
+        else if (hour >= 17 && hour < 20) cat = '正餐';
+        else if (hour >= 20 && hour <= 23) cat = '甜點';
+        else if (hour >= 0 && hour < 7) cat = '宵夜';
+        
+        const catSelect = document.getElementById('category-input');
+        if (catSelect) catSelect.value = cat;
+    }
+
+    // 印章操作函式
+    function addStamp(src) {
+        currentStamp = { src: src, x: 80, y: 80 }; // 預設放在照片牆右下角 80% 處
+        renderDayRecords(); 
+    }
+    function removeStamp() {
+        currentStamp = null;
+        renderDayRecords();
+    }
+
     function compressImage(base64Str, maxWidth = 800, quality = 0.6) {
         return new Promise((resolve) => {
             let img = new Image();
@@ -442,7 +526,7 @@
             reader.onload = async function(e) { 
                 try {
                     uploadedImageBase64 = await compressImage(e.target.result); 
-                    alert("照片已暫存準備好！\n請先選擇種類、輸入金額後再點擊「儲存這筆紀錄」喔！");
+                    alert("照片已暫存準備好！\n請先確認種類、輸入金額後再點擊「儲存這筆紀錄」喔！");
                 } catch(err) {
                     alert("照片處理失敗，請重試！");
                 }
@@ -535,7 +619,6 @@
         let wIdx = dailyWeather[dateStr] || 0;
         document.getElementById('weather-icon').src = weatherIcons[wIdx];
         
-        // ★ 核心升級：使用「絕對天數」來抽取金句，保證連續不重複，且跨年也絕對不一樣！
         const epoch = new Date('2024-01-01');
         const diffTime = dateObj - epoch;
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
@@ -547,7 +630,9 @@
 
         uploadedImageBase64 = null;
         document.getElementById('cost-input').value = '';
-        document.getElementById('category-input').value = '正餐';
+        currentStamp = null; // 切換日期時重置印章
+
+        setSmartTimeCategory(); // 呼叫智能時間預設
         renderDayRecords();
         
         document.getElementById('home-view').classList.remove('active');
@@ -598,7 +683,11 @@
     function renderDayRecords() {
         const list = document.getElementById('records-list');
         list.innerHTML = '';
+        
         if(records[selectedDateStr] && records[selectedDateStr].length > 0){
+            // 顯示印章工具列
+            document.getElementById('stamp-tray-container').style.display = 'block';
+
             records[selectedDateStr].forEach((r, index) => {
                 const wrapper = document.createElement('div');
                 wrapper.className = 'record-item';
@@ -622,6 +711,54 @@
                 }
                 list.appendChild(wrapper);
             });
+
+            // 渲染可拖曳的印章
+            if (currentStamp) {
+                const stampEl = document.createElement('img');
+                stampEl.src = currentStamp.src;
+                stampEl.style.position = 'absolute';
+                stampEl.style.left = currentStamp.x + '%';
+                stampEl.style.top = currentStamp.y + '%';
+                stampEl.style.width = '80px';
+                stampEl.style.transform = 'translate(-50%, -50%) rotate(-15deg)';
+                stampEl.style.zIndex = '50';
+                stampEl.style.cursor = 'grab';
+                stampEl.style.filter = 'drop-shadow(4px 8px 12px rgba(0,0,0,0.3))';
+                
+                stampEl.addEventListener('touchstart', e => {
+                    isDraggingStamp = true;
+                    stampEl.style.cursor = 'grabbing';
+                }, {passive: true});
+                
+                stampEl.addEventListener('touchmove', e => {
+                    if (!isDraggingStamp) return;
+                    e.preventDefault(); // 防止滾動螢幕
+                    const rect = list.getBoundingClientRect();
+                    const touch = e.touches[0];
+                    let x = touch.clientX - rect.left;
+                    let y = touch.clientY - rect.top;
+                    
+                    let px = (x / rect.width) * 100;
+                    let py = (y / rect.height) * 100;
+                    px = Math.max(0, Math.min(100, px));
+                    py = Math.max(0, Math.min(100, py));
+                    
+                    currentStamp.x = px;
+                    currentStamp.y = py;
+                    stampEl.style.left = px + '%';
+                    stampEl.style.top = py + '%';
+                }, {passive: false});
+                
+                stampEl.addEventListener('touchend', e => {
+                    isDraggingStamp = false;
+                    stampEl.style.cursor = 'grab';
+                });
+                
+                list.appendChild(stampEl);
+            }
+        } else {
+            // 沒有紀錄時隱藏印章工具列
+            document.getElementById('stamp-tray-container').style.display = 'none';
         }
     }
     
@@ -638,13 +775,12 @@
         }
     }
 
-    // ★ 生成本日日曆紙 (刪除天氣與星期幾，修復白相框與主標排版)
     async function exportDaily() {
         const container = document.getElementById('export-container');
         const quoteHtml = document.getElementById('daily-quote').innerHTML;
         const [y, m, d] = selectedDateStr.split('-');
 
-        let imagesHtml = '<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; margin-top: 60px;">';
+        let innerImagesHtml = '';
         let totalCost = 0;
         let catTotals = {};
         
@@ -657,8 +793,7 @@
                     else if (count >= 3) itemWidth = '30%';
 
                     const rotation = (idx % 2 === 0 ? 1 : -1) * (Math.random() * 3 + 1);
-                    // 完全強制填滿白色的相框結構 (修復 html2canvas 透明 bug)
-                    imagesHtml += `
+                    innerImagesHtml += `
                         <div style="width: ${itemWidth}; position:relative; margin-bottom: 30px; background-color: #FDFBF5 !important; padding: 15px 15px 65px 15px; border-radius: 12px; box-shadow: 0 10px 25px rgba(74, 64, 53, 0.15); border: 1px solid #EAE3D9; box-sizing: border-box; display: inline-block; transform: rotate(${rotation}deg);">
                             <div style="width: 100%; aspect-ratio: 1; overflow: hidden; border-radius: 4px; background-color: #FFFFFF;">
                                 <img src="${r.img}" style="width: 100%; height: 100%; object-fit: cover; display: block; margin: 0; padding: 0;">
@@ -672,7 +807,21 @@
                 }
             });
         }
-        imagesHtml += '</div>';
+        
+        // 匯出圖套用印章
+        let stampHtmlStr = '';
+        if (currentStamp && records[selectedDateStr] && records[selectedDateStr].length > 0) {
+            stampHtmlStr = `<img src="${currentStamp.src}" style="position: absolute; left: ${currentStamp.x}%; top: ${currentStamp.y}%; width: 140px; transform: translate(-50%, -50%) rotate(-15deg); z-index: 50; filter: drop-shadow(4px 10px 15px rgba(0,0,0,0.3));" onerror="this.style.display='none'">`;
+        }
+
+        let imagesHtml = `
+            <div style="position: relative; width: 100%; padding-bottom: 20px;">
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; margin-top: 60px;">
+                    ${innerImagesHtml}
+                </div>
+                ${stampHtmlStr}
+            </div>
+        `;
 
         const catOrder = ['正餐', '甜點', '宵夜', '飲料', '咖啡'];
         let catStrArr = [];
@@ -705,7 +854,7 @@
                     ${catStr ? `<div style="margin-top: 25px; font-size: 26px; color: #857A6F; font-weight: 700;">${catStr}</div>` : ''}
                     
                     <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-top: 80px; padding-top: 40px; border-top: 3px dashed #E6DFD3;">
-                        <img src="icon.png" style="width: 100px; height: 100px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));" crossorigin="anonymous">
+                        <img src="icon.png" style="width: 100px; height: 100px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));" crossorigin="anonymous" onerror="this.style.display='none'">
                         <div style="display: flex; flex-direction: column; justify-content: center; align-items: flex-start; width: 175px;">
                             <div style="font-size: 40px; font-weight: 900; color: #4A4035; letter-spacing: 2px; text-align: left; width: 100%; white-space: nowrap; line-height: 1.1;">一口日曆</div>
                             <div style="font-size: 18px; font-weight: 900; color: #B8A690; letter-spacing: 0.5px; text-align: left; width: 100%; white-space: nowrap; line-height: 1.2; margin-top: 4px;">Bite a Calendar</div>
@@ -719,7 +868,6 @@
         await triggerPreview(container, "✨ 長按儲存本日日曆紙 ✨");
     }
 
-    // ★ 生成本月嘴饞報告 (主標靠左)
     async function exportMonthly() {
         const container = document.getElementById('export-container');
         const cloneGrid = document.getElementById('calendar-grid').innerHTML;
