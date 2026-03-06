@@ -108,7 +108,7 @@
         
         .day-cell .thumbnail { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            object-fit: cover; border-radius: 14px; border: 3px solid var(--polaroid-paper); 
+            border-radius: 14px; border: 3px solid var(--polaroid-paper); 
             box-sizing: border-box; z-index: 1;
         }
         .day-cell.has-record span { display: none; }
@@ -170,10 +170,10 @@
         .upload-area { 
             border: 3px dashed var(--secondary); border-radius: 24px; padding: 20px 15px; 
             cursor: pointer; margin-bottom: 20px; background: white;
-            color: var(--primary); font-weight: 700; transition: all 0.3s ease;
+            color: var(--primary); font-weight: 700; transition: background 0.2s;
             display: flex; align-items: center; justify-content: center; gap: 12px;
         }
-        .upload-area:active { transform: scale(0.98); }
+        .upload-area:active { background: #F5EFEB; }
         .upload-area input[type="file"] { display: none; }
         
         .input-group { margin-bottom: 20px; }
@@ -526,7 +526,6 @@
         });
     }
 
-    // 重置上傳區塊的文字與視覺狀態
     function resetUploadUI() {
         const mainText = document.getElementById('upload-main-text');
         const subText = document.getElementById('upload-sub-text');
@@ -549,13 +548,12 @@
                 try {
                     uploadedImageBase64 = await compressImage(e.target.result); 
                     
-                    // 照片準備好後，改變文字與背景顏色給予使用者直觀的視覺回饋
                     document.getElementById('upload-main-text').innerText = "照片已準備好上傳！";
                     document.getElementById('upload-sub-text').innerText = "確認種類、輸入金額後，再儲存紀錄 ✨";
                     const uploadBox = document.getElementById('upload-area-box');
                     if (uploadBox) {
-                        uploadBox.style.backgroundColor = '#EFEBE3'; // 溫暖的淺燕麥灰
-                        uploadBox.style.borderColor = 'var(--primary)'; // 邊框變深色
+                        uploadBox.style.backgroundColor = '#EFEBE3'; 
+                        uploadBox.style.borderColor = 'var(--primary)'; 
                     }
 
                 } catch(err) {
@@ -626,8 +624,13 @@
                 cell.classList.add('has-record');
                 const latestRecord = records[dateStr][records[dateStr].length - 1];
                 if (latestRecord.img) {
-                    const thumb = document.createElement('img');
-                    thumb.src = latestRecord.img; thumb.className = 'thumbnail'; cell.appendChild(thumb);
+                    const thumb = document.createElement('div');
+                    thumb.className = 'thumbnail'; 
+                    thumb.style.backgroundImage = `url(${latestRecord.img})`;
+                    thumb.style.backgroundSize = 'cover';
+                    thumb.style.backgroundPosition = 'center';
+                    thumb.style.backgroundRepeat = 'no-repeat';
+                    cell.appendChild(thumb);
                 }
                 records[dateStr].forEach(r => monthlyTotal += parseInt(r.cost || 0));
             }
@@ -663,7 +666,7 @@
         document.getElementById('cost-input').value = '';
         currentStamps = []; 
 
-        resetUploadUI(); // 切換日期時重置上傳按鈕狀態
+        resetUploadUI(); 
         setSmartTimeCategory(); 
         renderDayRecords();
         
@@ -696,7 +699,7 @@
             localStorage.setItem('biteCalendarRecords', JSON.stringify(records));
             uploadedImageBase64 = null;
             document.getElementById('cost-input').value = '';
-            resetUploadUI(); // 儲存成功後重置上傳按鈕狀態
+            resetUploadUI(); 
             renderDayRecords(); 
         } catch(e) {
             alert("⚠️ 儲存空間似乎滿了！請善用「備份紀錄」功能下載後，刪除部分舊資料。");
@@ -835,8 +838,7 @@
                     const rotation = (idx % 2 === 0 ? 1 : -1) * (Math.random() * 3 + 1);
                     innerImagesHtml += `
                         <div style="width: ${itemWidth}; position:relative; margin-bottom: 30px; background-color: #FDFBF5 !important; padding: 15px 15px 65px 15px; border-radius: 12px; box-shadow: 0 10px 25px rgba(74, 64, 53, 0.15); border: 1px solid #EAE3D9; box-sizing: border-box; display: inline-block; transform: rotate(${rotation}deg);">
-                            <div style="width: 100%; aspect-ratio: 1; overflow: hidden; border-radius: 4px; background-color: #FFFFFF;">
-                                <img src="${r.img}" style="width: 100%; height: 100%; object-fit: cover; display: block; margin: 0; padding: 0;">
+                            <div style="width: 100%; padding-bottom: 100%; border-radius: 4px; background-color: #FFFFFF; background-image: url('${r.img}'); background-size: cover; background-position: center; background-repeat: no-repeat;">
                             </div>
                             ${r.cost > 0 ? `<div style="position:absolute; bottom:15px; left:0; width:100%; text-align:center; font-size: 32px; font-weight:900; color:#4A4035; font-family:'GenJyuu', sans-serif;">$ ${r.cost}</div>` : ''}
                         </div>`;
