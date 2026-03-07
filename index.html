@@ -109,7 +109,7 @@
         
         .day-cell .thumbnail { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            object-fit: cover; border-radius: 14px; border: 3px solid var(--polaroid-paper); 
+            border-radius: 14px; border: 3px solid var(--polaroid-paper); 
             box-sizing: border-box; z-index: 1;
         }
         .day-cell.has-record span { display: none; }
@@ -174,7 +174,7 @@
             color: var(--primary); font-weight: 700; transition: background 0.2s;
             display: flex; align-items: center; justify-content: center; gap: 12px;
         }
-        .upload-area:active { background: #F5EFEB !important; }
+        .upload-area:active { background: #F5EFEB; }
         .upload-area input[type="file"] { display: none; }
         
         .input-group { margin-bottom: 20px; }
@@ -225,6 +225,18 @@
             color: var(--text-light); margin: 20px 0; cursor: pointer; font-weight: 700;
         }
         .checkbox-label input { width: 18px; height: 18px; margin-right: 8px; accent-color: var(--primary); }
+
+        /* --- Loading 緩衝畫面專屬樣式 --- */
+        @keyframes spinPulse {
+            0% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(180deg); }
+            100% { transform: scale(1) rotate(360deg); }
+        }
+        .loading-spinner {
+            animation: spinPulse 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15));
+            width: 80px; margin-bottom: 20px; display: inline-block;
+        }
 
         #export-container { position: absolute; top: -9999px; left: -9999px; width: 1080px; background: var(--bg-color); padding: 0; }
     </style>
@@ -386,6 +398,13 @@
     </div>
 </div>
 
+<div id="loading-modal" class="modal-overlay" style="z-index: 9999;">
+    <div class="clay-card modal-box" style="text-align: center; padding: 40px 20px; box-shadow: 0 15px 35px rgba(74,64,53,0.15);">
+        <img src="clay_header_icon.png" class="loading-spinner" onerror="this.src='clay_heart.png'">
+        <h3 id="loading-text" style="color: var(--text-dark); margin: 0; font-size: 20px; font-weight: 900; line-height: 1.4;">⏳ 正在處理您的珍貴回憶<br>請稍候...</h3>
+    </div>
+</div>
+
 <div id="export-container"></div>
 
 <script>
@@ -450,18 +469,16 @@
     }
 
     async function init() { 
-        // ★ 核心升級：將舊的 localStorage 資料無縫轉移至 IndexedDB
         const oldRecordsStr = localStorage.getItem('biteCalendarRecords');
         if (oldRecordsStr) {
             try {
                 const oldRecords = JSON.parse(oldRecordsStr);
                 await localforage.setItem('biteCalendarRecords', oldRecords);
-                localStorage.removeItem('biteCalendarRecords'); // 搬移成功後清除佔用空間
-                console.log("資料轉移至 IndexedDB 成功！空間已釋放。");
+                localStorage.removeItem('biteCalendarRecords'); 
+                console.log("資料轉移至 IndexedDB 成功！");
             } catch(e) { console.error('資料轉移失敗', e); }
         }
 
-        // 從 IndexedDB 讀取所有紀錄
         const dbRecords = await localforage.getItem('biteCalendarRecords');
         records = dbRecords || {};
 
@@ -484,6 +501,15 @@
     function openBackupModal() { document.getElementById('backup-modal').classList.add('show'); }
     function closeBackupModal() { document.getElementById('backup-modal').classList.remove('show'); }
     function closePreview() { document.getElementById('preview-modal').classList.remove('show'); document.getElementById('preview-image').src = "";}
+
+    // 控制 Loading 畫面的函數
+    function showLoading(text) {
+        document.getElementById('loading-text').innerHTML = text;
+        document.getElementById('loading-modal').classList.add('show');
+    }
+    function hideLoading() {
+        document.getElementById('loading-modal').classList.remove('show');
+    }
 
     function toggleWeather() {
         let wIdx = dailyWeather[selectedDateStr] || 0;
@@ -523,7 +549,6 @@
         renderDayRecords();
     }
 
-    // ★ 壓縮極限優化：長寬上限 500px 即非常足夠，大幅節省儲存空間！
     function compressImage(base64Str, maxWidth = 500, quality = 0.65) {
         return new Promise((resolve) => {
             let img = new Image();
@@ -577,23 +602,54 @@
         }
     }
 
-    function exportBackup() {
+    // ★ 匯出時加入 Loading 緩衝機制
+    async function exportBackup() {
         if (Object.keys(records).length === 0) return alert("目前還沒有任何紀錄可以備份喔！");
-        const backupData = { records: records, weather: dailyWeather };
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([JSON.stringify(backupData)], { type: "application/json" }));
-        a.download = `BiteCalendar_Backup_${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
+        
+        showLoading("⏳ 正在打包您的珍貴回憶<br>請稍候...");
+        
+        // 刻意延遲以讓畫面成功渲染 Loading UI
+        setTimeout(() => {
+            try {
+                const backupData = { records: records, weather: dailyWeather };
+                const dataStr = JSON.stringify(backupData);
+                const blob = new Blob([dataStr], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `BiteCalendar_Backup_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a); // 相容性修正
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch(e) {
+                alert("匯出發生錯誤！請確認設備空間是否足夠。");
+                console.error(e);
+            } finally {
+                hideLoading();
+            }
+        }, 300);
     }
 
+    // ★ 匯入時加入 Loading 緩衝機制
     function importBackup(event) {
         const file = event.target.files[0];
         if (!file) return;
-        const reader = new FileReader();
-        reader.onload = async function(e) {
-            try {
-                const importedData = JSON.parse(e.target.result);
-                if (confirm("匯入備份將會與目前的紀錄合併。確定要匯入嗎？")) {
+
+        // 必須先跳出 Confirm，確認後再顯示 Loading
+        if (!confirm("匯入備份將會與目前的紀錄合併。確定要匯入嗎？")) {
+            event.target.value = ''; 
+            return;
+        }
+
+        showLoading("⏳ 正在還原您的珍貴回憶<br>請稍候...");
+        closeBackupModal(); // 關閉背後的選項卡
+
+        setTimeout(() => {
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
                     if (importedData.records) {
                         records = { ...records, ...importedData.records };
                         if (importedData.weather) dailyWeather = { ...dailyWeather, ...importedData.weather };
@@ -602,12 +658,17 @@
                     }
                     await localforage.setItem('biteCalendarRecords', records);
                     localStorage.setItem('biteCalendarWeather', JSON.stringify(dailyWeather));
-                    renderCalendar(); alert('還原成功！回憶都找回來囉！'); closeBackupModal();
+                    renderCalendar(); 
+                    hideLoading(); // 隱藏 Loading
+                    alert('還原成功！回憶都找回來囉！'); 
+                } catch (err) { 
+                    hideLoading(); // 失敗也要隱藏
+                    alert('檔案格式錯誤，請確保上傳的是正確的備份檔喔！'); 
                 }
-            } catch (err) { alert('檔案格式錯誤，請確保上傳的是正確的備份檔喔！'); }
-            event.target.value = ''; 
-        };
-        reader.readAsText(file);
+                event.target.value = ''; 
+            };
+            reader.readAsText(file);
+        }, 300);
     }
 
     function renderCalendar() {
@@ -818,15 +879,19 @@
         }
     }
     
+    // ★ 產圖時也加上 Loading 遮罩
     async function triggerPreview(element, hintText) {
+        showLoading("⏳ 正在生成精美圖片<br>請稍候...");
         try {
-            await new Promise(r => setTimeout(r, 300)); 
+            await new Promise(r => setTimeout(r, 400)); // 讓 UI 有時間渲染
             const canvas = await html2canvas(element, { scale: 1.5, backgroundColor: null, useCORS: true });
             document.getElementById('preview-image').src = canvas.toDataURL('image/png');
             document.getElementById('preview-hint-text').innerText = hintText;
+            hideLoading();
             document.getElementById('preview-modal').classList.add('show');
             element.innerHTML = ''; 
         } catch (error) {
+            hideLoading();
             alert("生成預覽時發生錯誤，請稍後再試。"); element.innerHTML = '';
         }
     }
@@ -989,7 +1054,6 @@
             if(c.classList.contains('has-record')){
                 c.style.background = 'white';
                 c.style.boxShadow = '4px 4px 10px #E0D7C9, -4px -4px 10px #FFFFFF';
-                c.style.padding = '8px';
             }
         });
         const weekdays = container.querySelectorAll('.weekday');
