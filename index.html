@@ -11,6 +11,7 @@
     <link rel="icon" href="logo.png">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
     <script src="quotes.js"></script>
 
     <style>
@@ -108,7 +109,7 @@
         
         .day-cell .thumbnail { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            border-radius: 14px; border: 3px solid var(--polaroid-paper); 
+            object-fit: cover; border-radius: 14px; border: 3px solid var(--polaroid-paper); 
             box-sizing: border-box; z-index: 1;
         }
         .day-cell.has-record span { display: none; }
@@ -173,7 +174,7 @@
             color: var(--primary); font-weight: 700; transition: background 0.2s;
             display: flex; align-items: center; justify-content: center; gap: 12px;
         }
-        .upload-area:active { background: #F5EFEB; }
+        .upload-area:active { background: #F5EFEB !important; }
         .upload-area input[type="file"] { display: none; }
         
         .input-group { margin-bottom: 20px; }
@@ -392,7 +393,7 @@
     let currentDate = new Date();
     let selectedDateStr = "";
     let uploadedImageBase64 = null;
-    let records = JSON.parse(localStorage.getItem('biteCalendarRecords')) || {};
+    let records = {};
     let dailyWeather = JSON.parse(localStorage.getItem('biteCalendarWeather')) || {};
 
     const weatherIcons = [
@@ -405,11 +406,8 @@
 
     let currentStamps = []; 
     let draggingStampIndex = -1;
-
-    let touchstartX = 0;
-    let touchstartY = 0;
-    let touchendX = 0;
-    let touchendY = 0;
+    let touchstartX = 0; let touchstartY = 0;
+    let touchendX = 0; let touchendY = 0;
 
     document.addEventListener('touchstart', e => {
         if (draggingStampIndex !== -1 || e.target.closest('#stamp-tray-container') || e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'button') return;
@@ -451,7 +449,22 @@
         openDayView(`${y}-${m}-${d}`);
     }
 
-    function init() { 
+    async function init() { 
+        // ★ 核心升級：將舊的 localStorage 資料無縫轉移至 IndexedDB
+        const oldRecordsStr = localStorage.getItem('biteCalendarRecords');
+        if (oldRecordsStr) {
+            try {
+                const oldRecords = JSON.parse(oldRecordsStr);
+                await localforage.setItem('biteCalendarRecords', oldRecords);
+                localStorage.removeItem('biteCalendarRecords'); // 搬移成功後清除佔用空間
+                console.log("資料轉移至 IndexedDB 成功！空間已釋放。");
+            } catch(e) { console.error('資料轉移失敗', e); }
+        }
+
+        // 從 IndexedDB 讀取所有紀錄
+        const dbRecords = await localforage.getItem('biteCalendarRecords');
+        records = dbRecords || {};
+
         renderCalendar(); 
         checkWarningModal(); 
     }
@@ -510,7 +523,8 @@
         renderDayRecords();
     }
 
-    function compressImage(base64Str, maxWidth = 800, quality = 0.6) {
+    // ★ 壓縮極限優化：長寬上限 500px 即非常足夠，大幅節省儲存空間！
+    function compressImage(base64Str, maxWidth = 500, quality = 0.65) {
         return new Promise((resolve) => {
             let img = new Image();
             img.onload = () => {
@@ -555,7 +569,6 @@
                         uploadBox.style.backgroundColor = '#EFEBE3'; 
                         uploadBox.style.borderColor = 'var(--primary)'; 
                     }
-
                 } catch(err) {
                     alert("照片處理失敗，請重試！");
                 }
@@ -577,7 +590,7 @@
         const file = event.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = async function(e) {
             try {
                 const importedData = JSON.parse(e.target.result);
                 if (confirm("匯入備份將會與目前的紀錄合併。確定要匯入嗎？")) {
@@ -587,7 +600,7 @@
                     } else {
                         records = { ...records, ...importedData };
                     }
-                    localStorage.setItem('biteCalendarRecords', JSON.stringify(records));
+                    await localforage.setItem('biteCalendarRecords', records);
                     localStorage.setItem('biteCalendarWeather', JSON.stringify(dailyWeather));
                     renderCalendar(); alert('還原成功！回憶都找回來囉！'); closeBackupModal();
                 }
@@ -682,7 +695,7 @@
         window.scrollTo(0,0);
     }
 
-    function saveRecord() {
+    async function saveRecord() {
         const costVal = document.getElementById('cost-input').value;
         const categoryVal = document.getElementById('category-input').value;
         
@@ -696,22 +709,22 @@
         });
 
         try {
-            localStorage.setItem('biteCalendarRecords', JSON.stringify(records));
+            await localforage.setItem('biteCalendarRecords', records);
             uploadedImageBase64 = null;
             document.getElementById('cost-input').value = '';
             resetUploadUI(); 
             renderDayRecords(); 
         } catch(e) {
-            alert("⚠️ 儲存空間似乎滿了！請善用「備份紀錄」功能下載後，刪除部分舊資料。");
+            alert("⚠️ 儲存發生未知錯誤，請確認設備空間是否足夠。");
             records[selectedDateStr].pop(); 
         }
     }
 
-    function deleteSpecificRecord(index) {
+    async function deleteSpecificRecord(index) {
         if (confirm("確定要刪除這筆紀錄嗎？")) {
             records[selectedDateStr].splice(index, 1);
             if (records[selectedDateStr].length === 0) delete records[selectedDateStr];
-            localStorage.setItem('biteCalendarRecords', JSON.stringify(records));
+            await localforage.setItem('biteCalendarRecords', records);
             renderDayRecords();
         }
     }
@@ -976,6 +989,7 @@
             if(c.classList.contains('has-record')){
                 c.style.background = 'white';
                 c.style.boxShadow = '4px 4px 10px #E0D7C9, -4px -4px 10px #FFFFFF';
+                c.style.padding = '8px';
             }
         });
         const weekdays = container.querySelectorAll('.weekday');
